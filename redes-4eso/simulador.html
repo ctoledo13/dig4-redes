@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador de red local · Digitalización 4º ESO</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--ink:#1d2433;--muted:#5b6476;--line:#dbe2ec;--pri:#7c3aed;--pri-soft:#ede9fe;--blue:#2563eb;--ok:#15803d;--ok-soft:#dcfce7;--bad:#b91c1c;--bad-soft:#fee2e2;--warn-soft:#fef3c7}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5}
+header{background:linear-gradient(135deg,#4c1d95,#7c3aed);color:#fff;padding:18px 16px}
+header .wrap{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+header h1{margin:0;font-size:24px}
+header a{color:#fff;font-size:14px}
+.wrap{max-width:1150px;margin:0 auto;padding:0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin:14px 0}
+.layout{display:grid;grid-template-columns:1.5fr 1fr;gap:14px}
+@media (max-width:900px){.layout{grid-template-columns:1fr}}
+button{font:inherit;font-size:14px;border:0;border-radius:10px;padding:8px 13px;background:var(--pri);color:#fff;cursor:pointer}
+button.ghost{background:var(--pri-soft);color:var(--pri)}
+button.on{background:#f59e0b;color:#111}
+button:disabled{opacity:.5;cursor:not-allowed}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
+svg{width:100%;height:auto;background:#f8fafc;border:1px solid var(--line);border-radius:14px;display:block;user-select:none}
+svg text{font-family:system-ui,sans-serif}
+.hint{font-size:14px;color:var(--muted)}
+#status{padding:8px 12px;border-radius:10px;background:var(--warn-soft);font-size:14px;margin-top:8px}
+.missions{list-style:none;padding:0;margin:0}
+.missions li{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0;background:#fbfcfe}
+.missions li.cur{border:2px solid var(--pri);background:var(--pri-soft)}
+.missions li.done{border-color:var(--ok);background:var(--ok-soft)}
+.missions li.lock{opacity:.5}
+.missions h4{margin:0 0 4px;font-size:16px}
+.missions p{margin:0;font-size:14px}
+.term{background:#0f172a;color:#d1fae5;border-radius:12px;font-family:ui-monospace,"Ubuntu Mono",Menlo,Consolas,monospace;font-size:13px;padding:10px;height:240px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
+.termin{display:flex;background:#0f172a;border-radius:0 0 12px 12px;margin-top:-6px;padding:6px 10px 10px;color:#86efac;font-family:ui-monospace,monospace;font-size:13px;align-items:center;gap:6px}
+.termin input{flex:1;background:transparent;border:0;outline:0;color:#fff;font:inherit}
+label{font-size:14px;font-weight:600;display:block;margin-top:8px}
+input[type=text]{font:inherit;font-size:15px;padding:7px 9px;border:1px solid var(--line);border-radius:9px;width:100%}
+input[readonly]{background:#f1f5f9;color:var(--muted)}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+#startBox{max-width:520px;margin:30px auto}
+.badge{display:inline-block;background:var(--pri-soft);color:var(--pri);border-radius:999px;padding:2px 10px;font-size:13px;font-weight:600}
+.modal{position:fixed;inset:0;background:#0008;display:none;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal .card{max-width:480px;width:100%}
+.ok{color:var(--ok)}.bad{color:var(--bad)}
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>🎮 Simulador: monta tu red local</h1><a href="index.html">← Volver a los apuntes</a></div></header>
+
+<div class="wrap" id="startBox">
+  <div class="card">
+    <h2 style="margin-top:0">👋 Antes de empezar</h2>
+    <p>Vas a montar una red local virtual con 5 ordenadores, un switch y un router. Cada alumno recibe <b>una red distinta</b> y <b>averías distintas</b>, así que tienes que hacerlo tú.</p>
+    <label for="nm">Nombre y apellidos</label><input type="text" id="nm" autocomplete="off">
+    <label for="gr">Grupo</label><input type="text" id="gr" placeholder="Ej.: 4º A" autocomplete="off">
+    <p><button id="startBtn">Empezar ▶</button></p>
+    <p class="hint">Si recargas la página, tu progreso se guarda en este ordenador.</p>
+  </div>
+</div>
+
+<div class="wrap" id="app" style="display:none">
+  <div class="layout">
+    <div>
+      <div class="card">
+        <div class="toolbar">
+          <button id="cableBtn" class="ghost">🔌 Modo cable: OFF</button>
+          <span class="badge" id="netBadge"></span>
+          <span class="hint">Haz clic en un cable para quitarlo.</span>
+        </div>
+        <svg id="net" viewBox="0 0 700 440"></svg>
+        <div id="status">Haz clic en un ordenador para configurarlo y usar su terminal.</div>
+      </div>
+      <div class="card" id="cfgCard">
+        <h3 style="margin:0" id="cfgTitle">⚙️ Configuración</h3>
+        <div id="cfgBody" class="hint">Selecciona un equipo en el dibujo.</div>
+      </div>
+    </div>
+    <div>
+      <div class="card">
+        <h3 style="margin:0 0 6px">🎯 Misiones <span class="badge" id="prog"></span></h3>
+        <ul class="missions" id="mlist"></ul>
+        <div class="row"><button id="hintBtn" class="ghost">💡 Pista</button><button id="pdfBtn" disabled>📄 Descargar certificado PDF</button></div>
+        <p id="hintTxt" class="hint"></p>
+      </div>
+      <div class="card">
+        <h3 style="margin:0 0 6px">🐧 Terminal <span class="badge" id="termWho">ningún equipo</span></h3>
+        <div class="term" id="term">Selecciona un ordenador y escribe un comando.
+Comandos: ip a · ip route · ping IP · clear · help</div>
+        <div class="termin"><span id="prompt">$</span><input id="cmd" autocomplete="off" spellcheck="false" placeholder="escribe aquí, p. ej. ip a"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal"><div class="card"><h3 id="mT" style="margin-top:0"></h3><div id="mB"></div><p style="text-align:right;margin-bottom:0"><button id="mClose">Entendido</button></p></div></div>
+
+<script>
+const R=n=>Math.floor(Math.random()*n);
+const $=id=>document.getElementById(id);
+let S=null;
+const KEY='simRed4eso_v1';
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function load(){try{const s=localStorage.getItem(KEY);return s?JSON.parse(s):null;}catch(e){return null;}}
+
+const POS={P1:{x:85,y:70},P2:{x:85,y:200},P3:{x:85,y:330},P4:{x:260,y:395},P5:{x:430,y:395},SW:{x:300,y:200},RT:{x:510,y:200},NET:{x:640,y:200}};
+const NAME={P1:'PC-1',P2:'PC-2',P3:'PC-3',P4:'PC-4',P5:'PC-5',SW:'Switch',RT:'Router',NET:'Internet'};
+const PCS=['P1','P2','P3','P4','P5'];
+
+function newState(name,group){
+  const X=R(200)+20;const pick=()=>PCS[R(4)];
+  let a=pick(),b=pick();while(b===a)b=pick();
+  const mac=()=>Array.from({length:6},(_,i)=>(i<3?['3c','52','82'][i]:R(256).toString(16).padStart(2,'0'))).join(':');
+  const cfg={};PCS.forEach(p=>cfg[p]={mode:'manual',ip:'',gw:'',mac:mac()});
+  return {name,group,X,start:Date.now(),links:[],cfg,rt:{dhcp:true},idx:0,done:[],pingA:a,pingB:b,netPC:pick(),faults:null,hints:0};
+}
+const rtIP=()=>`192.168.${S.X}.1`;
+const linked=(a,b)=>S.links.some(l=>(l[0]===a&&l[1]===b)||(l[0]===b&&l[1]===a));
+const neigh=id=>S.links.filter(l=>l.includes(id)).map(l=>l[0]===id?l[1]:l[0]).concat(id==='RT'?['NET']:[]);
+function parseIP(s){if(typeof s!=='string')return null;const p=s.trim().split('.');if(p.length!==4)return null;for(const x of p){if(!/^\d{1,3}$/.test(x)||+x>255)return null;}return p.map(Number);}
+const net3=s=>{const p=parseIP(s);return p?p.slice(0,3).join('.'):null;};
+const isPrivate=p=>p[0]===10||(p[0]===192&&p[1]===168)||(p[0]===172&&p[1]>=16&&p[1]<=31)||p[0]===127;
+
+/* Dominio de capa 2: equipos alcanzables pasando solo por el switch */
+function domain(src){
+  const vis=new Set([src]),par={},q=[src];
+  while(q.length){const x=q.shift();for(const y of neigh(x)){if(y==='NET'||vis.has(y))continue;vis.add(y);par[y]=x;if(y==='SW')q.push(y);}}
+  return {vis,par};
+}
+function pathTo(src,dst,par){const p=[dst];let x=dst;while(x!==src){x=par[x];if(!x)return [src,dst];p.unshift(x);}return p;}
+function dhcpIP(id){if(!S.links.some(l=>l.includes(id)))return null;const d=domain(id);return (d.vis.has('RT')&&S.rt.dhcp)?`192.168.${S.X}.${100+PCS.indexOf(id)+1}`:null;}
+function effIP(id){if(id==='RT')return rtIP();const c=S.cfg[id];if(c.mode==='dhcp')return dhcpIP(id);return parseIP(c.ip)?c.ip.trim():null;}
+function effGW(id){const c=S.cfg[id];if(c.mode==='dhcp')return dhcpIP(id)?rtIP():null;return parseIP(c.gw)?c.gw.trim():null;}
+const visiblePCs=()=>PCS.filter(p=>p!=='P5'||S.idx>=4);
+
+/* ---------- PING ---------- */
+function ping(src,target){
+  const L=[],t=()=>(Math.random()*0.5+0.2).toFixed(2),tw=()=>(Math.random()*8+11).toFixed(1);
+  const fail=(from)=>{L.push(`PING ${target} (${target}) 56(84) bytes of data.`);for(let i=1;i<=3;i++)L.push(`From ${from} icmp_seq=${i} Destination Host Unreachable`);L.push('',`--- ${target} ping statistics ---`,'4 packets transmitted, 0 received, +3 errors, 100% packet loss');return {ok:false,L};};
+  const tp=parseIP(target);
+  if(!tp)return {ok:false,L:[`ping: ${target}: Name or service not known`]};
+  const hasLink=S.links.some(l=>l.includes(src));const sip=effIP(src);
+  if(!hasLink||!sip)return {ok:false,L:['ping: connect: Network is unreachable','',hasLink?'(Pista: este equipo no tiene una IP válida)':'(Pista: este equipo no tiene cable de red conectado)']};
+  const d=domain(src);
+  const dup=[...d.vis].filter(x=>x!==src&&x!=='SW'&&effIP(x)===sip);
+  if(dup.length){const r=fail(sip);r.L.push('',`⚠️ Conflicto de IP: ${NAME[dup[0]]} tiene la misma IP (${sip}).`);return r;}
+  const okLines=(time)=>{L.push(`PING ${target} (${target}) 56(84) bytes of data.`);for(let i=1;i<=4;i++)L.push(`64 bytes from ${target}: icmp_seq=${i} ttl=${time>5?117:64} time=${time>5?tw():t()} ms`);L.push('',`--- ${target} ping statistics ---`,'4 packets transmitted, 4 received, 0% packet loss');};
+  if(target===sip){okLines(0);return {ok:true,L,dev:src,path:[src]};}
+  if(net3(target)===net3(sip)){
+    const dst=[...d.vis].find(x=>x!=='SW'&&x!==src&&effIP(x)===target);
+    if(!dst)return fail(sip);
+    const dd=[...d.vis].filter(x=>x!=='SW'&&effIP(x)===target);if(dd.length>1){const r=fail(sip);r.L.push('',`⚠️ Conflicto de IP: hay ${dd.length} equipos con la IP ${target}.`);return r;}
+    okLines(0);return {ok:true,L,dev:dst,path:pathTo(src,dst,d.par)};
+  }
+  const gw=effGW(src);
+  if(!gw||net3(gw)!==net3(sip))return {ok:false,L:['ping: connect: Network is unreachable','','(Pista: para salir de tu red necesitas una puerta de enlace válida de tu misma red)']};
+  if(!d.vis.has('RT')||gw!==rtIP()||net3(rtIP())!==net3(sip))return fail(sip);
+  if(isPrivate(tp))return fail(rtIP());
+  okLines(20);return {ok:true,L,dev:'NET',path:pathTo(src,'RT',d.par).concat(['NET'])};
+}
+
+/* ---------- MISIONES ---------- */
+const M=[
+  {t:'1. Conecta los cables',d:()=>`Activa el <b>modo cable</b> y conecta PC-1, PC-2, PC-3 y PC-4 al <b>switch</b>. Fíjate cómo se encienden las luces de los puertos.`,
+   h:'Pulsa “Modo cable”, haz clic en un PC y luego en el switch. Repite con cada PC.',
+   chk:()=>['P1','P2','P3','P4'].every(p=>linked(p,'SW'))},
+  {t:'2. Pon direcciones IP fijas',d:()=>`Tu red es la <b>192.168.${S.X}.0</b> (máscara 255.255.255.0). Da a PC-1, PC-2, PC-3 y PC-4 una IP fija de esa red, <b>sin repetir</b> y sin usar la <b>.1</b> (es para el router).`,
+   h:()=>`Selecciona un PC (sin modo cable), elige “Manual” y escribe por ejemplo 192.168.${S.X}.10, 192.168.${S.X}.11… Pulsa Guardar.`,
+   chk:()=>{const ips=['P1','P2','P3','P4'].map(p=>S.cfg[p].mode==='manual'?S.cfg[p].ip.trim():'');
+     if(!ips.every(ip=>{const p=parseIP(ip);return p&&net3(ip)===`192.168.${S.X}`&&p[3]>=2&&p[3]<=254;}))return false;return new Set(ips).size===4;}},
+  {t:'3. Tu primer ping',d:()=>`Selecciona <b>${NAME[S.pingA]}</b> y, en su terminal, haz <b>ping</b> a la IP de <b>${NAME[S.pingB]}</b>. Antes escribe <code>ip a</code> para ver tu propia IP.`,
+   h:()=>`Selecciona ${NAME[S.pingA]} y escribe: ping ${S.cfg[S.pingB].ip||'IP_de_'+NAME[S.pingB]}`,
+   ev:e=>e.ok&&e.src===S.pingA&&e.dev===S.pingB},
+  {t:'4. Salida a Internet',d:()=>`Conecta el <b>switch al router</b>. Pon a PC-1…PC-4 la <b>puerta de enlace</b> (la IP del router: <b>${rtIP()}</b>). Después haz <code>ping 8.8.8.8</code> desde <b>${NAME[S.netPC]}</b>.`,
+   h:'En modo cable une Switch y Router. Luego selecciona cada PC y rellena “Puerta de enlace”. 8.8.8.8 es un servidor de Google en Internet.',
+   ev:e=>e.ok&&e.src===S.netPC&&e.dev==='NET'&&linked('SW','RT')&&['P1','P2','P3','P4'].every(p=>effGW(p)===rtIP())},
+  {t:'5. Un PC nuevo con DHCP',d:()=>`Ha llegado <b>PC-5</b>. Esta vez no le pongas la IP a mano: conéctalo al switch y elige <b>“Automática (DHCP)”</b>. El router le dará IP. Comprueba con <code>ip a</code> y haz <code>ping 8.8.8.8</code> desde PC-5.`,
+   h:'Modo cable: PC-5 → Switch. Selecciona PC-5, marca “Automática (DHCP)” y Guardar. Mira qué IP le ha dado el router.',
+   ev:e=>e.ok&&e.src==='P5'&&e.dev==='NET'&&S.cfg.P5.mode==='dhcp'},
+  {t:'6. Detective de averías',d:()=>`🚨 ¡Alguien ha tocado la red! Hay <b>2 averías</b> escondidas. Encuéntralas y arréglalas. Usa <code>ip a</code>, <code>ip route</code> y <code>ping</code>. Cuando creas que está todo bien, pulsa <b>Comprobar toda la red</b>.<br><button id="checkAll" style="margin-top:6px">🔎 Comprobar toda la red</button>`,
+   h:'Revisa en cada PC: ¿tiene cable? ¿su IP es de tu red? ¿se repite alguna IP? ¿la puerta de enlace es la del router? ¿está el DHCP del router activado?',
+   chk:()=>S.allOk===true}
+];
+const FAULTS=[
+  {k:'cable',f:()=>{const p=['P1','P2','P3','P4'][R(4)];S.links=S.links.filter(l=>!l.includes(p));return `Se ha desconectado el cable de ${NAME[p]}`;}},
+  {k:'ip',f:()=>{const p=['P1','P2','P3','P4'][R(4)];const o=S.X+1+R(5);S.cfg[p].mode='manual';S.cfg[p].ip=`192.168.${o}.${R(200)+20}`;return `${NAME[p]} tiene una IP de otra red`;}},
+  {k:'dup',f:()=>{const a=['P1','P2','P3','P4'];const p=a.splice(R(4),1)[0],q=a[R(3)];S.cfg[q].mode='manual';S.cfg[q].ip=S.cfg[p].ip;return `${NAME[q]} tiene la misma IP que ${NAME[p]}`;}},
+  {k:'gw',f:()=>{const p=['P1','P2','P3','P4'][R(4)];S.cfg[p].gw=`192.168.${S.X}.${R(100)+150}`;return `${NAME[p]} tiene mal la puerta de enlace`;}},
+  {k:'dhcp',f:()=>{S.rt.dhcp=false;return 'El DHCP del router está apagado';}},
+  {k:'rt',f:()=>{S.links=S.links.filter(l=>!(l.includes('SW')&&l.includes('RT')));return 'Se ha desconectado el cable entre el switch y el router';}}
+];
+function applyFaults(){const pool=FAULTS.slice();const chosen=[];while(chosen.length<2){const i=R(pool.length);const fk=pool.splice(i,1)[0];if(chosen.some(c=>(c.k==='ip'||c.k==='dup')&&(fk.k==='ip'||fk.k==='dup')))continue;chosen.push(fk);}
+  S.faults=chosen.map(c=>c.f());S.allOk=false;}
+
+function advance(){
+  S.done.push({m:S.idx,t:Date.now()});S.idx++;
+  if(S.idx===5){applyFaults();}
+  save();renderMissions();draw();
+  if(S.idx<M.length)modal('✅ ¡Misión superada!',`<p>Siguiente: <b>${M[S.idx].t}</b></p><p>${M[S.idx].d().replace(/<br>.*$/,'')}</p>`);
+  else{modal('🏆 ¡Red completada!','<p>Has superado todas las misiones. Descarga tu <b>certificado PDF</b> y súbelo a tu Google Sites.</p>');$('pdfBtn').disabled=false;}
+}
+function evalState(){if(S.idx<M.length&&M[S.idx].chk&&M[S.idx].chk())advance();}
+function evalEvent(e){if(S.idx<M.length&&M[S.idx].ev&&M[S.idx].ev(e))advance();}
+
+function renderMissions(){
+  $('mlist').innerHTML=M.map((m,i)=>`<li class="${i<S.idx?'done':i===S.idx?'cur':'lock'}"><h4>${i<S.idx?'✅':i===S.idx?'👉':'🔒'} ${m.t}</h4>${i===S.idx?`<p>${m.d()}</p>`:''}</li>`).join('');
+  $('prog').textContent=`${Math.min(S.idx,M.length)} / ${M.length}`;$('hintTxt').textContent='';
+  const ca=$('checkAll');if(ca)ca.onclick=checkAll;
+  $('pdfBtn').disabled=S.idx<M.length;
+}
+function checkAll(){
+  const res=PCS.map(p=>({p,r:ping(p,'8.8.8.8')}));const bad=res.filter(x=>!x.r.ok);
+  if(bad.length===0){S.allOk=true;save();evalState();}
+  else modal('🔎 Todavía hay problemas',`<p>Estos equipos <b>no</b> llegan a Internet:</p><ul>${bad.map(x=>`<li>${NAME[x.p]}</li>`).join('')}</ul><p class="hint">Investiga con la terminal de cada uno.</p>`);
+}
+
+/* ---------- DIBUJO ---------- */
+let cableMode=false,first=null,sel=null,anim=false;
+function draw(){
+  const svg=$('net');let g='';
+  // Internet
+  g+=`<line x1="${POS.RT.x}" y1="${POS.RT.y}" x2="${POS.NET.x}" y2="${POS.NET.y}" stroke="#94a3b8" stroke-width="5" stroke-dasharray="3 6"/>`;
+  S.links.forEach((l,i)=>{const a=POS[l[0]],b=POS[l[1]];g+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#2563eb" stroke-width="5"/><line class="lk" data-i="${i}" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="transparent" stroke-width="20" style="cursor:pointer"/>`;});
+  g+=`<g transform="translate(${POS.NET.x},${POS.NET.y})"><ellipse rx="52" ry="34" fill="#e0f2fe" stroke="#0284c7" stroke-width="2"/><text y="-2" text-anchor="middle" font-size="24">☁️</text><text y="20" text-anchor="middle" font-size="12">Internet</text></g>`;
+  // switch with 8 port LEDs
+  const swPorts=S.links.filter(l=>l.includes('SW')).length;
+  g+=`<g class="dev" data-id="SW" style="cursor:pointer"><rect x="${POS.SW.x-70}" y="${POS.SW.y-28}" width="140" height="56" rx="8" fill="${first==='SW'?'#f59e0b':'#1e293b'}" stroke="${sel==='SW'?'#f59e0b':'none'}" stroke-width="3"/><text x="${POS.SW.x}" y="${POS.SW.y-6}" fill="#fff" font-size="13" text-anchor="middle">SWITCH · 8 puertos</text>`;
+  for(let i=0;i<8;i++)g+=`<circle class="led" cx="${POS.SW.x-56+i*16}" cy="${POS.SW.y+12}" r="5" fill="${i<swPorts?'#22c55e':'#475569'}"/>`;
+  g+='</g>';
+  // router
+  g+=`<g class="dev" data-id="RT" style="cursor:pointer"><rect x="${POS.RT.x-48}" y="${POS.RT.y-30}" width="96" height="60" rx="10" fill="${first==='RT'?'#f59e0b':'#fff'}" stroke="${sel==='RT'?'#f59e0b':'#0f766e'}" stroke-width="3"/><text x="${POS.RT.x}" y="${POS.RT.y-4}" text-anchor="middle" font-size="22">📡</text><text x="${POS.RT.x}" y="${POS.RT.y+18}" text-anchor="middle" font-size="12">Router</text></g><text x="${POS.RT.x}" y="${POS.RT.y+48}" text-anchor="middle" font-size="12" fill="#0f766e">${rtIP()}${S.rt.dhcp?' · DHCP ✔':' · DHCP ✖'}</text>`;
+  visiblePCs().forEach(p=>{const o=POS[p],ip=effIP(p),has=S.links.some(l=>l.includes(p));
+    g+=`<g class="dev" data-id="${p}" style="cursor:pointer"><rect x="${o.x-46}" y="${o.y-28}" width="92" height="56" rx="10" fill="${first===p?'#fde68a':'#fff'}" stroke="${sel===p?'#f59e0b':'#7c3aed'}" stroke-width="${sel===p?4:2}"/><text x="${o.x}" y="${o.y-4}" font-size="22" text-anchor="middle">💻</text><text x="${o.x}" y="${o.y+18}" font-size="13" font-weight="700" text-anchor="middle">${NAME[p]}</text></g>
+    <text x="${o.x}" y="${o.y+44}" font-size="11.5" text-anchor="middle" fill="${ip?'#334155':'#b91c1c'}">${ip||(S.cfg[p].mode==='dhcp'?'esperando DHCP…':'sin IP')}${has?'':' · sin cable'}</text>`;});
+  svg.innerHTML=g;
+  svg.querySelectorAll('.dev').forEach(el=>el.addEventListener('click',()=>clickDev(el.dataset.id)));
+  svg.querySelectorAll('.lk').forEach(el=>el.addEventListener('click',()=>{const l=S.links[+el.dataset.i];S.links.splice(+el.dataset.i,1);status(`✂️ Cable quitado: ${NAME[l[0]]} — ${NAME[l[1]]}`);save();draw();cfgPanel();evalState();}));
+  $('netBadge').textContent=`Tu red: 192.168.${S.X}.0 /24`;
+}
+function status(t){$('status').textContent=t;}
+function clickDev(id){
+  if(anim)return;
+  if(cableMode){
+    if(!first){if(id==='SW'||id==='RT'||PCS.includes(id)){first=id;status(`Cable desde ${NAME[id]}… ahora haz clic en el otro extremo.`);draw();}return;}
+    const a=first,b=id;first=null;
+    if(a===b){status('Cancelado.');draw();return;}
+    const isPC=x=>PCS.includes(x);
+    if(isPC(a)&&isPC(b)){status('❌ En esta práctica los PCs se conectan al switch, no entre ellos.');draw();return;}
+    if(linked(a,b)){status('⚠️ Esos dos ya están conectados.');draw();return;}
+    for(const x of [a,b])if(isPC(x)&&S.links.some(l=>l.includes(x))){status(`❌ ${NAME[x]} ya tiene su cable puesto: solo tiene una tarjeta de red.`);draw();return;}
+    if((a==='SW'||b==='SW')&&S.links.filter(l=>l.includes('SW')).length>=8){status('❌ El switch no tiene más puertos libres.');draw();return;}
+    S.links.push([a,b]);status(`🔌 Conectado: ${NAME[a]} — ${NAME[b]}. ¡Mira la luz del puerto!`);save();draw();cfgPanel();evalState();return;
+  }
+  sel=id;draw();cfgPanel();
+}
+function cfgPanel(){
+  const b=$('cfgBody');
+  if(!sel||sel==='SW'){ $('cfgTitle').textContent='⚙️ Configuración';b.innerHTML=sel==='SW'?'<p>El switch del aula es <b>no gestionable</b>: no se configura, solo se enchufa. Aprende solo las direcciones MAC de cada puerto.</p>':'<p class="hint">Selecciona un ordenador o el router.</p>';termOwner(null);return;}
+  if(sel==='RT'){$('cfgTitle').textContent='⚙️ Router';
+    b.innerHTML=`<label>IP del router (puerta de enlace)</label><input type="text" readonly value="${rtIP()}"><label><input type="checkbox" id="dh" ${S.rt.dhcp?'checked':''}> Servidor DHCP activado (reparte IPs .101 a .199)</label>`;
+    $('dh').onchange=e=>{S.rt.dhcp=e.target.checked;save();draw();};termOwner(null);return;}
+  const c=S.cfg[sel];$('cfgTitle').textContent='⚙️ '+NAME[sel];
+  b.innerHTML=`<div class="row" style="margin-top:6px"><label style="margin:0"><input type="radio" name="md" value="manual" ${c.mode==='manual'?'checked':''}> Manual (IP fija)</label><label style="margin:0"><input type="radio" name="md" value="dhcp" ${c.mode==='dhcp'?'checked':''}> Automática (DHCP)</label></div>
+   <label>Dirección IP</label><input type="text" id="fIP" value="${c.mode==='dhcp'?(dhcpIP(sel)||''):c.ip}" ${c.mode==='dhcp'?'readonly':''} placeholder="192.168.${S.X}.__">
+   <label>Máscara de red</label><input type="text" readonly value="255.255.255.0">
+   <label>Puerta de enlace</label><input type="text" id="fGW" value="${c.mode==='dhcp'?(dhcpIP(sel)?rtIP():''):c.gw}" ${c.mode==='dhcp'?'readonly':''} placeholder="IP del router">
+   <p><button id="fSave">💾 Guardar</button> <span id="fMsg" class="hint"></span></p>`;
+  b.querySelectorAll('input[name=md]').forEach(r=>r.onchange=()=>{c.mode=r.value;save();draw();cfgPanel();evalState();});
+  $('fSave').onclick=()=>{if(c.mode==='manual'){c.ip=$('fIP').value.trim();c.gw=$('fGW').value.trim();}
+    const okIP=c.mode==='dhcp'||parseIP(c.ip),okGW=c.mode==='dhcp'||!c.gw||parseIP(c.gw);
+    $('fMsg').innerHTML=okIP&&okGW?'<span class="ok">Guardado ✔</span>':'<span class="bad">Revisa el formato: 4 números del 0 al 255 separados por puntos.</span>';
+    save();draw();evalState();};
+  termOwner(sel);
+}
+
+/* ---------- TERMINAL ---------- */
+let owner=null;
+function termOwner(id){owner=id;$('termWho').textContent=id?NAME[id]:'ningún equipo';$('prompt').textContent=id?`alumno@${NAME[id]}:~$`:'$';$('cmd').disabled=!id;}
+function out(t){const el=$('term');el.textContent+='\n'+t;el.scrollTop=el.scrollHeight;}
+function run(cmdline){
+  const c=cmdline.trim().replace(/\s+/g,' ');out(`alumno@${NAME[owner]}:~$ ${c}`);if(!c)return;
+  const has=S.links.some(l=>l.includes(owner)),ip=effIP(owner),gw=effGW(owner),cf=S.cfg[owner];
+  if(c==='clear'){$('term').textContent='';return;}
+  if(c==='help'){out('ip a          → ver mi IP y mi MAC\nip route      → ver mi puerta de enlace\nping IP       → comprobar si llego a otro equipo\nclear         → limpiar la pantalla');return;}
+  if(c==='ip a'||c==='ip addr'||c==='ip address'){
+    out(`1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536\n    inet 127.0.0.1/8 scope host lo\n2: enp3s0: <BROADCAST,MULTICAST${has?',UP,LOWER_UP':''}> mtu 1500 state ${has?'UP':'DOWN'}\n    link/ether ${cf.mac} brd ff:ff:ff:ff:ff:ff`+(has&&ip?`\n    inet ${ip}/24 brd ${net3(ip)}.255 scope global ${cf.mode==='dhcp'?'dynamic ':''}enp3s0`:''));return;}
+  if(c==='ip route'||c==='ip r'){
+    if(!has||!ip){out('(sin rutas: no hay red)');return;}
+    let s='';if(gw)s+=`default via ${gw} dev enp3s0 ${cf.mode==='dhcp'?'proto dhcp ':''}\n`;s+=`${net3(ip)}.0/24 dev enp3s0 proto kernel scope link src ${ip}`;out(s);return;}
+  const m=c.match(/^ping(?: -c ?\d+)? (\S+)$/);
+  if(m){const r=ping(owner,m[1]);
+    animate(r.ok?r.path:null).then(()=>{out(r.L.join('\n'));if(r.ok)evalEvent({ok:true,src:owner,dev:r.dev});});return;}
+  if(/^sudo/.test(c)){out('alumno no está en el archivo sudoers. 😉 (En el aula tampoco tienes permisos de administrador)');return;}
+  out(`${c.split(' ')[0]}: orden no encontrada. Escribe help para ver los comandos.`);
+}
+function animate(path){return new Promise(res=>{
+  if(!path||path.length<2){res();return;}anim=true;const svg=$('net');
+  const c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('r',10);c.setAttribute('fill','#f59e0b');c.setAttribute('stroke','#111');svg.appendChild(c);
+  let i=0;function seg(){if(i>=path.length-1){c.remove();anim=false;res();return;}const a=POS[path[i]],b=POS[path[i+1]];const t0=performance.now();
+    (function f(t){const k=Math.min(1,(t-t0)/450);c.setAttribute('cx',a.x+(b.x-a.x)*k);c.setAttribute('cy',a.y+(b.y-a.y)*k);
+      svg.querySelectorAll('.led').forEach((l,j)=>{if(l.getAttribute('fill')!=='#475569')l.setAttribute('fill',Math.random()<.5?'#22c55e':'#bbf7d0');});
+      if(k<1)requestAnimationFrame(f);else{i++;seg();}})(t0);}
+  seg();});}
+$('cmd').addEventListener('keydown',e=>{if(e.key==='Enter'&&owner&&!anim){run(e.target.value);e.target.value='';}});
+
+/* ---------- PDF ---------- */
+function hash(s){let h=5381;for(const ch of s)h=((h<<5)+h+ch.charCodeAt(0))>>>0;return h.toString(36).toUpperCase().slice(-6);}
+function fmt(ms){const m=Math.round(ms/60000);return m+' min';}
+function pdf(){
+  const code=hash(S.name+S.group+S.X+S.done.map(d=>d.t).join(''));
+  const end=S.done.length?S.done[S.done.length-1].t:Date.now();
+  if(!window.jspdf){window.print();return;}
+  const {jsPDF}=window.jspdf;const doc=new jsPDF();let y=20;
+  doc.setFillColor(124,58,237);doc.rect(0,0,210,30,'F');doc.setTextColor(255);doc.setFontSize(18);doc.text('Certificado · Simulador de red local',14,19);
+  doc.setTextColor(30);doc.setFontSize(12);y=44;
+  [['Alumno/a',S.name],['Grupo',S.group],['Fecha',new Date(end).toLocaleString('es-ES')],['Red asignada',`192.168.${S.X}.0 /24 (router ${rtIP()})`],['Tiempo empleado',fmt(end-S.start)],['Pistas usadas',String(S.hints)]].forEach(r=>{doc.setFont(undefined,'bold');doc.text(r[0]+':',14,y);doc.setFont(undefined,'normal');doc.text(r[1],60,y);y+=8;});
+  y+=4;doc.setFont(undefined,'bold');doc.text('Misiones superadas',14,y);y+=8;doc.setFont(undefined,'normal');
+  S.done.forEach(d=>{doc.text(`✓ ${M[d.m].t.replace(/^\d\. /,(d.m+1)+'. ')}  (${new Date(d.t).toLocaleTimeString('es-ES')})`.replace('✓','OK'),18,y);y+=7;});
+  y+=4;doc.setFont(undefined,'bold');doc.text('Averías que encontró y arregló:',14,y);y+=8;doc.setFont(undefined,'normal');
+  (S.faults||[]).forEach(f=>{doc.text('- '+f,18,y);y+=7;});
+  y+=6;doc.setFont(undefined,'bold');doc.text('Equipos configurados:',14,y);y+=8;doc.setFont(undefined,'normal');doc.setFontSize(10);
+  PCS.forEach(p=>{doc.text(`${NAME[p]}: IP ${effIP(p)||'-'} · puerta de enlace ${effGW(p)||'-'} · ${S.cfg[p].mode==='dhcp'?'DHCP':'IP fija'} · MAC ${S.cfg[p].mac}`,18,y);y+=6;});
+  doc.setFontSize(12);y+=10;doc.setFillColor(237,233,254);doc.rect(14,y-7,182,14,'F');doc.text(`Código de verificación: ${code}`,18,y+2);
+  doc.setFontSize(9);doc.setTextColor(110);doc.text('Digitalización 4º ESO · Unidad 2: Redes · Prof. Carlos Alberto Toledo',14,288);
+  doc.save(`Simulador_red_${S.name.replace(/\s+/g,'_')}.pdf`);
+}
+
+/* ---------- UI ---------- */
+function modal(t,b){$('mT').textContent=t;$('mB').innerHTML=b;$('modal').style.display='flex';}
+$('mClose').onclick=()=>$('modal').style.display='none';
+$('cableBtn').onclick=()=>{cableMode=!cableMode;first=null;$('cableBtn').textContent='🔌 Modo cable: '+(cableMode?'ON':'OFF');$('cableBtn').className=cableMode?'on':'ghost';status(cableMode?'Modo cable: haz clic en un extremo y luego en el otro.':'Haz clic en un equipo para configurarlo.');draw();};
+$('hintBtn').onclick=()=>{if(S.idx>=M.length)return;const h=M[S.idx].h;$('hintTxt').textContent='💡 '+(typeof h==='function'?h():h);S.hints++;save();};
+$('pdfBtn').onclick=pdf;
+function boot(){$('startBox').style.display='none';$('app').style.display='block';renderMissions();draw();cfgPanel();if(S.idx>=M.length)$('pdfBtn').disabled=false;}
+$('startBtn').onclick=()=>{const n=$('nm').value.trim(),g=$('gr').value.trim();if(n.split(' ').length<2||!g){alert('Escribe tu nombre y apellidos y tu grupo.');return;}S=newState(n,g);save();boot();
+  modal('🎯 Misión 1',`<p>Tu red es la <b>192.168.${S.X}.0</b>. Apúntala, la vas a necesitar.</p><p>${M[0].d()}</p>`);};
+const old=load();
+if(old&&old.name){$('nm').value=old.name;$('gr').value=old.group;const b=document.createElement('p');b.innerHTML=`<button id="contBtn">Continuar como ${old.name} (misión ${Math.min(old.idx+1,6)}) ▶</button>`;$('startBtn').parentNode.after(b);
+  $('contBtn').onclick=()=>{S=old;boot();};}
+</script>
+</body>
+</html>

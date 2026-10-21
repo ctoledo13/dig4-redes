@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redes de ordenadores · Digitalización 4º ESO</title>
+<style>
+:root{
+  --bg:#f4f7fb; --card:#ffffff; --ink:#1d2433; --muted:#5b6476; --line:#dbe2ec;
+  --pri:#2563eb; --pri-soft:#e3ecff; --ok:#15803d; --ok-soft:#dcfce7; --bad:#b91c1c; --bad-soft:#fee2e2;
+  --warn:#b45309; --warn-soft:#fef3c7; --acc:#7c3aed; --acc-soft:#ede9fe; --term:#0f172a; --termink:#d1fae5;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;font-size:17px}
+header.hero{position:relative;color:#fff;padding:56px 16px 48px;min-height:300px;display:flex;align-items:center;
+  background:linear-gradient(90deg,rgba(10,22,60,.92) 0%,rgba(15,35,90,.78) 45%,rgba(15,35,90,.15) 100%),url('img/portada.jpg') center right/cover no-repeat #1e3a8a}
+header.hero .wrap{width:100%}
+@media (max-width:700px){header.hero{min-height:240px;background:linear-gradient(rgba(10,22,60,.82),rgba(10,22,60,.82)),url('img/portada.jpg') center/cover no-repeat #1e3a8a}}
+.wrap{max-width:960px;margin:0 auto;padding:0 16px}
+.hero h1{margin:0 0 6px;font-size:clamp(28px,5vw,42px);line-height:1.15}
+.hero p{margin:0;opacity:.95;max-width:560px;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+.hero .tag{display:inline-block;background:rgba(255,255,255,.18);padding:3px 12px;border-radius:999px;font-size:14px;margin-bottom:12px}
+nav.toc{position:sticky;top:0;z-index:20;background:#ffffffee;backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+nav.toc .wrap{display:flex;gap:6px;overflow-x:auto;padding:8px 16px;scrollbar-width:thin}
+nav.toc a{white-space:nowrap;text-decoration:none;color:var(--pri);font-size:14px;padding:5px 11px;border-radius:999px;background:var(--pri-soft)}
+nav.toc a:hover{background:var(--pri);color:#fff}
+#progress{position:fixed;top:0;left:0;height:4px;background:#f59e0b;z-index:30;width:0}
+section.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:24px 22px;margin:22px 0;box-shadow:0 2px 10px rgba(20,40,80,.05)}
+section.card h2{margin:0 0 4px;font-size:26px;display:flex;align-items:center;gap:10px}
+section.card h2 .n{background:var(--pri);color:#fff;border-radius:10px;font-size:17px;padding:2px 10px}
+h3{margin:22px 0 6px;font-size:20px}
+.lead{color:var(--muted);margin-top:0}
+.key{background:var(--warn-soft);border-left:5px solid #f59e0b;padding:12px 16px;border-radius:10px;margin:14px 0}
+.key b:first-child{display:block}
+.note{background:var(--pri-soft);border-left:5px solid var(--pri);padding:12px 16px;border-radius:10px;margin:14px 0}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.g3{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.mini{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fbfcfe}
+.mini h4{margin:0 0 4px;font-size:17px}
+.emoji{font-size:30px;line-height:1}
+table{border-collapse:collapse;width:100%;font-size:15px;margin:10px 0}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--pri-soft)}
+.tablewrap{overflow-x:auto}
+button,.btn{font:inherit;font-size:15px;border:0;border-radius:10px;padding:8px 14px;background:var(--pri);color:#fff;cursor:pointer}
+button:hover{filter:brightness(1.1)}
+button.ghost{background:var(--pri-soft);color:var(--pri)}
+button.sel{background:var(--acc);color:#fff}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.video{position:relative;padding-top:56.25%;border-radius:14px;overflow:hidden;background:#000;margin:12px 0}
+.video iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+code,.mono{font-family:ui-monospace,"Ubuntu Mono",Menlo,Consolas,monospace}
+pre.term{background:var(--term);color:var(--termink);border-radius:12px;padding:14px;overflow-x:auto;font-size:14px;line-height:1.45}
+pre.term .hl{background:#facc15;color:#111;border-radius:3px;padding:0 2px}
+pre.term .hl2{background:#38bdf8;color:#111;border-radius:3px;padding:0 2px}
+.quiz{border:2px dashed var(--line);border-radius:14px;padding:14px 16px;margin:16px 0;background:#fcfdff}
+.quiz p{margin:0 0 8px;font-weight:600}
+.quiz .opts{display:flex;flex-wrap:wrap;gap:8px}
+.quiz .opts button{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.quiz .opts button.right{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.quiz .opts button.wrong{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+.quiz .fb{margin-top:8px;font-size:15px}
+details.profe{background:#fff7ed;border:2px solid #fdba74;border-radius:12px;padding:10px 14px;margin:14px 0}
+details.profe summary{cursor:pointer;font-weight:700;color:#9a3412}
+details.profe ul{margin:8px 0 0}
+.flip{cursor:pointer;min-height:150px;position:relative}
+.flip .back{display:none}
+.flip.on .front{display:none}
+.flip.on .back{display:block}
+.flip .hint{font-size:13px;color:var(--muted)}
+.flip.on{background:var(--acc-soft);border-color:var(--acc)}
+input[type=text]{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:10px;width:100%;max-width:280px}
+input[type=range]{width:100%}
+.out{margin-top:8px;padding:10px 12px;border-radius:10px;background:#f1f5f9;font-size:15px}
+.out.ok{background:var(--ok-soft);color:var(--ok)}
+.out.bad{background:var(--bad-soft);color:var(--bad)}
+svg text{font-family:system-ui,sans-serif}
+.svgbox{background:#f8fafc;border:1px solid var(--line);border-radius:14px;width:100%;max-width:680px;margin:0 auto;height:auto;display:block}
+.wire{display:flex;gap:4px;margin:10px 0;flex-wrap:wrap}
+.wire div{width:36px;height:90px;border-radius:6px;display:flex;align-items:flex-end;justify-content:center;font-size:12px;font-weight:700;padding-bottom:4px;border:1px solid #9ca3af}
+.packet{position:absolute;width:44px;height:30px;border-radius:7px;background:#f59e0b;color:#111;font-weight:800;font-size:14px;display:flex;align-items:center;justify-content:center;transition:left 1.4s ease-in-out, top 1.4s ease-in-out;box-shadow:0 2px 6px rgba(0,0,0,.2)}
+#pkStage{position:relative;height:200px;background:#f8fafc;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.pc-ico{position:absolute;top:70px;font-size:44px}
+.cta{display:block;text-decoration:none;text-align:center;padding:18px;border-radius:16px;color:#fff;font-weight:700;font-size:19px}
+.cta small{display:block;font-weight:400;font-size:14px;opacity:.9}
+main.paged section.card{display:none}
+main.paged section.card.active{display:block;animation:fadein .35s ease}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+nav.toc a.cur{background:var(--pri);color:#fff}
+.pager{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:26px;padding-top:16px;border-top:1px solid var(--line);flex-wrap:wrap}
+.pager button{font-size:16px;padding:11px 18px}
+.pager button.prev{background:var(--pri-soft);color:var(--pri)}
+.pager button[disabled]{visibility:hidden}
+.pager .count{color:var(--muted);font-size:14px}
+.pager button.next{margin-left:auto}
+footer{color:var(--muted);font-size:14px;text-align:center;padding:30px 16px 50px}
+@media (max-width:600px){body{font-size:16px}section.card{padding:18px 14px}}
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<header class="hero">
+  <div class="wrap">
+    <span class="tag">Digitalización · 4º ESO · Unidad 2</span>
+    <h1>🌐 Redes de ordenadores</h1>
+    <p>Cómo se conectan los ordenadores, qué aparatos hacen falta y cómo se “hablan” entre ellos. Lee, toca, prueba… sección a sección.</p>
+  </div>
+</header>
+<nav class="toc"><div class="wrap">
+  <a href="#s0">🚀 Inicio</a>
+  <a href="#s1">1. ¿Qué es una red?</a>
+  <a href="#s2">2. Tipos por alcance</a>
+  <a href="#s3">3. Hardware</a>
+  <a href="#s4">4. Medios</a>
+  <a href="#s5">5. Topologías</a>
+  <a href="#s6">6. TCP/IP</a>
+  <a href="#s7">7. Dirección IP</a>
+  <a href="#s8">8. Dirección MAC</a>
+  <a href="#s9">9. Montar una LAN</a>
+  <a href="#retos">🎯 Retos</a>
+</div></nav>
+
+<main class="wrap paged" id="main">
+
+<!-- ============ 0. INTRO ============ -->
+<section class="card" id="s0" data-t="Antes de empezar">
+  <h2>🚀 Antes de empezar</h2>
+  <p>Cada vez que mandas un WhatsApp, ves un vídeo o juegas online, tu mensaje viaja por <b>muchas redes</b>: la WiFi de tu casa, la red de tu compañía de Internet, cables bajo el mar… y llega en milisegundos. En esta unidad vas a entender cómo pasa eso.</p>
+  <div class="grid g3">
+    <div class="mini"><div class="emoji">📖</div><h4>1. Lee y toca</h4>Avanza con el botón <b>Siguiente</b>. Cada apartado tiene algo interactivo: pruébalo, no lo saltes.</div>
+    <div class="mini"><div class="emoji">🎮</div><h4>2. Simulador</h4>Monta una red virtual y supera las misiones.</div>
+    <div class="mini"><div class="emoji">📝</div><h4>3. Actividades</h4>Preguntas autocorregidas con nota en PDF para tu Google Sites.</div>
+  </div>
+</section>
+
+<!-- ============ 1. QUÉ ES UNA RED ============ -->
+<section class="card" id="s1">
+  <h2><span class="n">1</span> ¿Qué es una red?</h2>
+  <div class="key"><b>Idea clave</b>Una <b>red de ordenadores</b> es un conjunto de dispositivos conectados entre sí que pueden <b>comunicarse</b> y <b>compartir datos y recursos</b>.</div>
+  <p>Con una red podemos:</p>
+  <div class="grid g3">
+    <div class="mini"><div class="emoji">📁</div><h4>Compartir archivos</h4>Abrir un documento que está guardado en otro ordenador o en un servidor.</div>
+    <div class="mini"><div class="emoji">🖨️</div><h4>Compartir recursos</h4>Una sola impresora o una sola conexión a Internet para toda la clase.</div>
+    <div class="mini"><div class="emoji">💬</div><h4>Comunicarnos</h4>Mensajes, correo, videollamadas, juegos online…</div>
+  </div>
+  <p>Los dispositivos de una red se llaman <b>nodos</b> o <b>equipos</b>: ordenadores, móviles, impresoras, consolas, televisores, cámaras…</p>
+  <p>Una red tiene dos partes, igual que un ordenador:</p>
+  <div class="grid g2">
+    <div class="mini"><h4>🔧 Hardware de red</h4>Lo que se puede tocar: tarjetas de red, cables, switch, router…</div>
+    <div class="mini"><h4>💾 Software de red</h4>Las “reglas” para comunicarse: los <b>protocolos</b> (como TCP/IP).</div>
+  </div>
+  <div class="quiz" data-ok="1"><p>¿Cuál de estas cosas NO es un ejemplo de compartir recursos en red?</p>
+    <div class="opts"><button>Imprimir desde varios PCs en la misma impresora</button><button>Copiar un archivo con un pendrive</button><button>Usar todos la misma conexión a Internet</button></div>
+    <div class="fb" data-fb-ok="¡Bien! El pendrive no usa la red: llevas el archivo “en la mano”." data-fb-bad="Revisa: con un pendrive no usas ninguna red, llevas el archivo físicamente."></div></div>
+</section>
+
+<!-- ============ 2. TIPOS POR ALCANCE ============ -->
+<section class="card" id="s2">
+  <h2><span class="n">2</span> Tipos de redes según su alcance</h2>
+  <p class="lead">Según lo grande que sea la zona que cubren, las redes se llaman PAN, LAN, MAN o WAN. Mueve el deslizador 👇</p>
+  <input type="range" id="scale" min="0" max="3" step="1" value="0" aria-label="Alcance de la red">
+  <div class="grid g2" style="align-items:center">
+    <svg id="scaleSvg" viewBox="0 0 300 200" class="svgbox" aria-hidden="true"></svg>
+    <div id="scaleInfo"></div>
+  </div>
+  <div class="tablewrap"><table>
+    <tr><th>Tipo</th><th>Significa</th><th>Alcance</th><th>Ejemplo</th></tr>
+    <tr><td><b>PAN</b></td><td>Red de Área Personal</td><td>Pocos metros, alrededor de una persona</td><td>Móvil + auriculares Bluetooth + reloj</td></tr>
+    <tr><td><b>LAN</b></td><td>Red de Área Local</td><td>Una habitación, una casa, un edificio</td><td>La red del aula o del instituto</td></tr>
+    <tr><td><b>MAN</b></td><td>Red de Área Metropolitana</td><td>Una ciudad</td><td>Red que une las sedes del Ayuntamiento</td></tr>
+    <tr><td><b>WAN</b></td><td>Red de Área Amplia</td><td>Un país, un continente, el mundo</td><td><b>Internet</b> (la WAN más grande)</td></tr>
+  </table></div>
+  <div class="note">💡 Truco para recordarlo: <b>P</b>ersonal → <b>L</b>ocal → <b>M</b>etropolitana → <b>W</b>orld (mundo). Cada vez más grande.</div>
+  <h3>🎬 Vídeo: tipos de redes</h3>
+  <div class="video"><iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/xErOSDD2uds" title="Tipos de redes" allowfullscreen></iframe></div>
+  <div class="quiz" data-ok="2"><p>Tus auriculares Bluetooth conectados al móvil forman una red…</p>
+    <div class="opts"><button>LAN</button><button>WAN</button><button>PAN</button><button>MAN</button></div>
+    <div class="fb" data-fb-ok="¡Correcto! Es una red personal de pocos metros." data-fb-bad="Piensa en el alcance: ¡solo unos metros alrededor de ti!"></div></div>
+</section>
+
+<!-- ============ 3. HARDWARE ============ -->
+<section class="card" id="s3">
+  <h2><span class="n">3</span> Hardware de red: los aparatos</h2>
+  <p class="lead">Toca cada tarjeta para ver su comparación con la vida real.</p>
+  <div class="grid g3" id="flipGrid">
+    <div class="mini flip"><div class="front"><div class="emoji">🔌</div><h4>Tarjeta de red (NIC)</h4>Convierte los datos del ordenador en señales que viajan por el cable o por el aire. Tiene una luz que parpadea cuando transmite.<div class="hint">👆 Toca para ver la comparación</div></div><div class="back"><h4>Es como… tu boca y tus oídos</h4>Sin ella, el ordenador no puede “hablar” ni “escuchar” en la red. Puede ser de cable (Ethernet, conector RJ45) o inalámbrica (WiFi).</div></div>
+    <div class="mini flip"><div class="front"><div class="emoji">🔀</div><h4>Switch (conmutador)</h4>Une los ordenadores de una misma red local. Envía cada mensaje <b>solo</b> al ordenador que lo tiene que recibir.<div class="hint">👆 Toca para ver la comparación</div></div><div class="back"><h4>Es como… el conserje de un edificio</h4>Recibe las cartas y las deja solo en el buzón correcto, porque se sabe qué vecino vive en cada piso (aprende la dirección MAC de cada puerto).</div></div>
+    <div class="mini flip"><div class="front"><div class="emoji">📡</div><h4>Router (enrutador)</h4>Une <b>dos redes distintas</b>: por ejemplo, la red de tu casa con Internet. Decide el camino de los paquetes.<div class="hint">👆 Toca para ver la comparación</div></div><div class="back"><h4>Es como… la oficina de Correos</h4>Si la carta va a otra ciudad (otra red), Correos la saca del barrio y la manda por el camino adecuado. El router de casa suele llevar también switch y WiFi dentro.</div></div>
+    <div class="mini flip"><div class="front"><div class="emoji">📶</div><h4>Punto de acceso (AP)</h4>Crea una red <b>inalámbrica</b> (WiFi) y la une a la red de cable.<div class="hint">👆 Toca para ver la comparación</div></div><div class="back"><h4>Es como… un repetidor de radio</h4>Hace que los móviles y portátiles puedan entrar en la red sin cable. En los institutos suele haber varios en el techo.</div></div>
+    <div class="mini flip"><div class="front"><div class="emoji">🗄️</div><h4>Servidor</h4>Ordenador que ofrece un <b>servicio</b> a los demás: páginas web, archivos, correo, juegos…<div class="hint">👆 Toca para ver la comparación</div></div><div class="back"><h4>Es como… un restaurante</h4>Los clientes (tu PC, tu móvil) piden y el servidor “sirve”. Cuando ves YouTube, estás pidiendo vídeos a servidores de Google.</div></div>
+    <div class="mini flip"><div class="front"><div class="emoji">〰️</div><h4>Medio de transmisión</h4>El “camino” por el que viajan los datos: cables o el aire (ondas).<div class="hint">👆 Toca para ver la comparación</div></div><div class="back"><h4>Es como… las carreteras</h4>Hay carreteras de tierra (lentas) y autopistas (rápidas). La fibra óptica sería la autopista. Lo vemos en el apartado 4.</div></div>
+  </div>
+
+  <h3>🔀 Animación: ¿cómo trabaja un switch?</h3>
+  <p>Elige qué ordenador envía y a cuál. Luego compara con un <b>hub</b> (un aparato antiguo que enviaba todo a todos).</p>
+  <div class="btnrow">
+    <span>Origen:</span><span id="swFrom"></span>
+  </div>
+  <div class="btnrow">
+    <span>Destino:</span><span id="swTo"></span>
+  </div>
+  <div class="btnrow">
+    <button id="swSend">▶ Enviar con switch</button>
+    <button id="hubSend" class="ghost">▶ Enviar con hub antiguo</button>
+  </div>
+  <svg id="swSvg" viewBox="0 0 520 300" class="svgbox"></svg>
+  <div id="swMsg" class="out">Elige origen y destino y pulsa enviar.</div>
+
+  <div class="note">🏫 <b>En nuestra aula</b> tenemos un switch <b>TP-Link TL-SF1016D</b>: 16 puertos RJ45 a 100 Mbit/s. Es “plug and play”: no se configura, solo se enchufa. Cada puerto tiene una luz <b>Link/Act</b>: se enciende cuando hay un cable bien conectado y <b>parpadea</b> cuando pasan datos.</div>
+
+  <h3>🎬 Vídeo: el switch</h3>
+  <div class="video"><iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/I1IpKSTEvqc" title="Qué es un switch" allowfullscreen></iframe></div>
+
+  <div class="quiz" data-ok="0"><p>En casa tienes WiFi pero “no hay Internet”. ¿Qué aparato es más probable que esté fallando o sin conexión con la compañía?</p>
+    <div class="opts"><button>El router</button><button>La tarjeta de red del móvil</button><button>El switch</button></div>
+    <div class="fb" data-fb-ok="¡Exacto! El router es el que une tu red local con Internet. La WiFi (red local) puede funcionar aunque Internet no." data-fb-bad="Pista: ¿qué aparato une tu red de casa con Internet?"></div></div>
+</section>
+
+<!-- ============ 4. MEDIOS ============ -->
+<section class="card" id="s4">
+  <h2><span class="n">4</span> Medios de transmisión</h2>
+  <p class="lead">Por dónde viajan los datos: <b>con cable</b> (medios guiados) o <b>sin cable</b> (por el aire).</p>
+  <h3>🔌 Con cable</h3>
+  <div class="grid g3">
+    <div class="mini"><div class="emoji">🟦</div><h4>Par trenzado + RJ45</h4>8 hilos de cobre trenzados de dos en dos (4 pares de colores). Es el cable de red normal. Conector <b>RJ45</b>. Hasta 100 metros.</div>
+    <div class="mini"><div class="emoji">⚫</div><h4>Coaxial</h4>Un hilo central de cobre, un aislante y una malla metálica alrededor. Es el de la antena de la tele. Hoy se usa poco en redes.</div>
+    <div class="mini"><div class="emoji">✨</div><h4>Fibra óptica</h4>Un hilo finísimo de vidrio o plástico por el que viajan <b>pulsos de luz</b> (de un láser o un LED). La más rápida y la que llega más lejos.</div>
+  </div>
+  <h3>🌈 El cable de par trenzado por dentro</h3>
+  <p>Los 8 hilos se colocan en el conector RJ45 en un orden fijo. El más usado es la norma <b>T568B</b>. Pulsa para verlo:</p>
+  <div class="btnrow"><button id="showB">Ver orden T568B</button><button id="showA" class="ghost">Ver orden T568A</button></div>
+  <div class="wire" id="wire"></div>
+  <div id="wireTxt" class="out">Con la pestaña del conector hacia abajo y los contactos mirando hacia ti, el hilo 1 queda a la izquierda.</div>
+  <div class="note">🔁 Antes se necesitaba un cable “cruzado” para unir dos PCs directamente. Los switch modernos como el del aula tienen <b>Auto MDI/MDIX</b>: detectan el cable y vale cualquiera.</div>
+
+  <h3>📶 Sin cable (inalámbricos)</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Tecnología</th><th>Alcance aproximado</th><th>Para qué se usa</th></tr>
+    <tr><td>📶 <b>WiFi</b></td><td>Decenas de metros</td><td>Redes locales sin cable (casa, instituto). Las versiones modernas (WiFi 6) son muy rápidas.</td></tr>
+    <tr><td>🎧 <b>Bluetooth</b></td><td>Pocos metros</td><td>Redes PAN: auriculares, relojes, ratones.</td></tr>
+    <tr><td>📱 <b>Red móvil 4G/5G</b></td><td>Kilómetros (antenas)</td><td>Internet en el móvil por la calle.</td></tr>
+    <tr><td>🗼 <b>Microondas</b></td><td>Varios km, con antenas que se “ven”</td><td>Unir edificios o zonas rurales. Necesitan repetidores.</td></tr>
+    <tr><td>🛰️ <b>Satélite</b></td><td>Enorme</td><td>Lugares aislados, barcos, aviones.</td></tr>
+  </table></div>
+  <div class="quiz" data-ok="1"><p>¿Por qué viajan los datos dentro de una fibra óptica?</p>
+    <div class="opts"><button>Por electricidad</button><button>Por pulsos de luz</button><button>Por ondas de radio</button></div>
+    <div class="fb" data-fb-ok="¡Correcto! Luz dentro de un hilo de vidrio." data-fb-bad="No… la fibra es de vidrio y transporta luz."></div></div>
+  <h3>🎬 Vídeo: medios de transmisión</h3>
+  <div class="video"><iframe loading="lazy" src="https://www.youtube-nocookie.com/embed/eHylrOxQ5Vo" title="Medios de transmisión" allowfullscreen></iframe></div>
+</section>
+
+<!-- ============ 5. TOPOLOGÍAS ============ -->
+<section class="card" id="s5">
+  <h2><span class="n">5</span> Topologías: la forma de la red</h2>
+  <p class="lead">La <b>topología</b> es la forma en que se conectan los equipos (el “dibujo” de la red).</p>
+  <div class="note">🧪 <b>Laboratorio de averías:</b> elige una topología y <b>haz clic en un cable o en un aparato</b> para romperlo. Mira cuántos ordenadores siguen comunicados. Vuelve a hacer clic para arreglarlo.</div>
+  <div class="btnrow" id="topoBtns"></div>
+  <svg id="topoSvg" viewBox="0 0 520 320" class="svgbox"></svg>
+  <div id="topoMsg" class="out"></div>
+  <div id="topoInfo"></div>
+  <div class="quiz" data-ok="2"><p>En una red en estrella, ¿qué pasa si se estropea el switch central?</p>
+    <div class="opts"><button>Solo falla un ordenador</button><button>No pasa nada</button><button>Se cae toda la red</button></div>
+    <div class="fb" data-fb-ok="¡Eso es! Todo pasa por el centro: es su punto débil." data-fb-bad="Pruébalo en el laboratorio: haz clic en el switch de la estrella."></div></div>
+</section>
+
+<!-- ============ 6. TCP/IP ============ -->
+<section class="card" id="s6">
+  <h2><span class="n">6</span> Protocolos: el idioma de la red (TCP/IP)</h2>
+  <div class="key"><b>Idea clave</b>Un <b>protocolo</b> es un conjunto de reglas que todos los equipos siguen para entenderse. Da igual que uses Windows, Ubuntu, Android o una consola: todos “hablan” <b>TCP/IP</b>, el protocolo de Internet.</div>
+  <div class="grid g2">
+    <div class="mini"><h4>📦 TCP</h4>Trocea el mensaje en <b>paquetes</b> numerados, comprueba que llegan todos y los vuelve a ordenar. Si falta uno, lo pide otra vez.</div>
+    <div class="mini"><h4>🏷️ IP</h4>Pone a cada paquete la <b>dirección</b> de origen y de destino para que la red sepa a dónde llevarlo.</div>
+  </div>
+  <h3>📦 Animación: un mensaje viajando en paquetes</h3>
+  <p>Los paquetes pueden ir por caminos distintos y llegar desordenados. TCP los ordena al final.</p>
+  <div class="btnrow"><button id="pkBtn">▶ Enviar “HOLA 4ºESO”</button></div>
+  <div id="pkStage"><div class="pc-ico" style="left:14px">💻</div><div class="pc-ico" style="right:14px">🖥️</div></div>
+  <div id="pkMsg" class="out">Pulsa el botón.</div>
+</section>
+
+<!-- ============ 7. IP ============ -->
+<section class="card" id="s7">
+  <h2><span class="n">7</span> La dirección IP</h2>
+  <div class="key"><b>Idea clave</b>Cada equipo conectado a una red tiene una <b>dirección IP</b> que lo identifica, igual que cada casa tiene una dirección postal. En <b>IPv4</b> son <b>4 números del 0 al 255</b> separados por puntos. Ejemplo: <span class="mono">192.168.1.25</span></div>
+  <h3>🏘️ La red y el equipo</h3>
+  <p>En las redes de casa y del instituto, normalmente:</p>
+  <svg viewBox="0 0 520 120" class="svgbox" role="img" aria-label="Partes de una dirección IP">
+    <rect x="20" y="20" width="340" height="50" rx="10" fill="#dbeafe" stroke="#2563eb"/>
+    <rect x="370" y="20" width="130" height="50" rx="10" fill="#fef3c7" stroke="#f59e0b"/>
+    <text x="190" y="54" font-size="26" text-anchor="middle" font-family="monospace" fill="#1e3a8a">192 . 168 . 1 .</text>
+    <text x="435" y="54" font-size="26" text-anchor="middle" font-family="monospace" fill="#92400e">25</text>
+    <text x="190" y="98" font-size="15" text-anchor="middle" fill="#1e3a8a">La RED (la “calle”): igual en todos</text>
+    <text x="435" y="98" font-size="15" text-anchor="middle" fill="#92400e">El EQUIPO (“nº de casa”)</text>
+  </svg>
+  <ul>
+    <li>Los <b>3 primeros números</b> indican la red. Dos equipos se pueden comunicar directamente si están en la <b>misma red</b> (mismos 3 primeros números).</li>
+    <li>El <b>último número</b> identifica al equipo y <b>no se puede repetir</b> dentro de la red. Se usan del 1 al 254 (el 0 y el 255 están reservados).</li>
+    <li>Esto lo indica la <b>máscara de red</b> <span class="mono">255.255.255.0</span> (también escrita <span class="mono">/24</span>).</li>
+  </ul>
+  <div class="grid g2">
+    <div class="mini"><h4>🚪 Puerta de enlace</h4>Es la IP del <b>router</b>. Si un paquete va a otra red (por ejemplo, a Internet), el equipo se lo da al router. Suele acabar en <span class="mono">.1</span>.</div>
+    <div class="mini"><h4>🤖 DHCP o IP fija</h4>La IP la puede repartir el router automáticamente (<b>DHCP</b>, IP dinámica) o la podemos escribir a mano (<b>IP fija</b>, estática).</div>
+    <div class="mini"><h4>🏠 IP privada</h4>Solo vale dentro de tu red local. Empiezan por <span class="mono">192.168.</span>, <span class="mono">10.</span> o <span class="mono">172.16.</span> a <span class="mono">172.31.</span></div>
+    <div class="mini"><h4>🌍 IP pública</h4>La que te da tu compañía para salir a Internet. Toda tu casa sale con la misma IP pública (la del router).</div>
+  </div>
+  <h3>🔍 Comprobador de IP</h3>
+  <p>Escribe una IP y te digo si es válida y si es privada:</p>
+  <input type="text" id="ipIn" placeholder="Ej.: 192.168.1.300" autocomplete="off"> <button id="ipBtn">Comprobar</button>
+  <div id="ipOut" class="out">Prueba con 192.168.1.300, 8.8.8.8, 10.0.0.5…</div>
+  <h3>🤝 ¿Están en la misma red?</h3>
+  <p>Pulsa “Nueva pareja” y decide. ¡Intenta acertar 5 seguidas!</p>
+  <div class="mono" id="pairBox" style="font-size:20px;margin:6px 0"></div>
+  <div class="btnrow"><button id="pairNew" class="ghost">🔄 Nueva pareja</button><button id="pairYes">✅ Misma red</button><button id="pairNo">❌ Redes distintas</button></div>
+  <div id="pairOut" class="out">Racha: 0</div>
+  <h3>🔢 IPv4 se queda corta: IPv6</h3>
+  <p>IPv4 permite unos <b>4.300 millones</b> de direcciones. Parecen muchas, pero hay más dispositivos que personas en el mundo. Por eso se está pasando a <b>IPv6</b>, que tiene tantas direcciones que podríamos dar miles de millones a cada grano de arena de la Tierra. Una IPv6 se ve así: <span class="mono">2001:db8:85a3::8a2e:370:7334</span></p>
+</section>
+
+<!-- ============ 8. MAC ============ -->
+<section class="card" id="s8">
+  <h2><span class="n">8</span> La dirección MAC</h2>
+  <div class="key"><b>Idea clave</b>La <b>dirección MAC</b> es un identificador <b>único</b> que el fabricante graba en cada tarjeta de red. Son <b>6 parejas</b> de caracteres hexadecimales (0-9 y A-F) separadas por dos puntos. Ejemplo: <span class="mono">00:1B:44:11:3A:B7</span></div>
+  <div class="grid g2">
+    <div class="mini"><h4>🪪 MAC = tu DNI</h4>Va con el aparato siempre, esté en la red que esté. Las 3 primeras parejas indican el <b>fabricante</b>.</div>
+    <div class="mini"><h4>🏠 IP = tu dirección</h4>Cambia según la red a la que te conectes (casa, instituto, cafetería…).</div>
+  </div>
+  <p>El <b>switch</b> usa las MAC para saber a qué puerto enviar cada mensaje. Los routers pueden hacer <b>filtrado MAC</b>: dejar entrar solo a los dispositivos de una lista (lista blanca) o bloquear a algunos (lista negra), por ejemplo al vecino que se cuela en tu WiFi.</p>
+  <h3>🐧 ¿Cómo veo mi IP y mi MAC en Ubuntu?</h3>
+  <p>Abre la <b>Terminal</b> (teclas <span class="mono">Ctrl + Alt + T</span>) y escribe <span class="mono">ip a</span>. No necesitas ser administrador. Busca tu tarjeta de cable (suele llamarse <span class="mono">enp…</span> o <span class="mono">eth0</span>):</p>
+<pre class="term">alumno@aula-pc07:~$ ip a
+1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 ...
+    inet 127.0.0.1/8 scope host lo
+2: enp3s0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 ...
+    link/ether <span class="hl2">3c:52:82:a1:7f:0e</span> brd ff:ff:ff:ff:ff:ff
+    inet <span class="hl">192.168.20.47</span>/24 brd 192.168.20.255 scope global dynamic enp3s0</pre>
+  <ul>
+    <li><span class="hl2" style="background:#38bdf8;padding:0 4px;border-radius:3px">link/ether</span> → tu <b>MAC</b>.</li>
+    <li><span style="background:#facc15;padding:0 4px;border-radius:3px">inet</span> → tu <b>IP</b> (y el <span class="mono">/24</span> es la máscara).</li>
+    <li><span class="mono">lo</span> y <span class="mono">127.0.0.1</span> es “uno mismo” (loopback): no cuenta.</li>
+  </ul>
+  <div class="quiz" data-ok="1"><p>¿Cuál de estas es una dirección MAC?</p>
+    <div class="opts"><button>192.168.0.14</button><button>A4:C3:F0:85:7E:21</button><button>255.255.255.0</button></div>
+    <div class="fb" data-fb-ok="¡Bien! 6 parejas hexadecimales separadas por dos puntos." data-fb-bad="Fíjate: la MAC tiene 6 parejas con letras y números y dos puntos."></div></div>
+</section>
+
+<!-- ============ 9. MONTAR LAN ============ -->
+<section class="card" id="s9">
+  <h2><span class="n">9</span> Ejemplo: montar una red local cableada</h2>
+  <p>Así se monta una red LAN como la que vamos a hacer en clase:</p>
+  <ol>
+    <li><b>Necesitamos:</b> ordenadores con tarjeta de red, un switch (con tantos puertos como equipos, o más), cables de par trenzado con conectores RJ45 y, si queremos Internet, un router.</li>
+    <li><b>Conectamos</b> un extremo del cable a la tarjeta de red de cada ordenador y el otro a un puerto del switch.</li>
+    <li><b>Comprobamos las luces:</b> la luz del puerto del switch se enciende si el cable está bien.</li>
+    <li><b>Si hay router</b>, unimos el switch con el router con otro cable.</li>
+    <li><b>Configuramos TCP/IP:</b> cada equipo necesita una IP de la misma red. Puede darla el router por DHCP o la ponemos a mano.</li>
+    <li><b>Probamos</b> que se “ven” con el comando <span class="mono">ping</span>: <span class="mono">ping 192.168.20.48</span></li>
+  </ol>
+<pre class="term">alumno@aula-pc07:~$ ping -c 4 192.168.20.48
+64 bytes from 192.168.20.48: icmp_seq=1 ttl=64 time=0.41 ms
+64 bytes from 192.168.20.48: icmp_seq=2 ttl=64 time=0.38 ms
+...
+4 packets transmitted, 4 received, <span class="hl">0% packet loss</span></pre>
+  <p>Si sale <b>0% packet loss</b>, ¡hay comunicación! Si sale <span class="mono">Destination Host Unreachable</span> o <b>100% packet loss</b>, algo falla: cable, IP o el otro equipo apagado.</p>
+</section>
+
+<!-- ============ RETOS ============ -->
+<section class="card" id="retos">
+  <h2>🎯 Tus retos</h2>
+  <p>Hazlos en este orden. Cada uno genera un <b>PDF</b> que subirás a tu <b>Google Sites</b>.</p>
+  <div class="grid g2">
+    <a class="cta" style="background:#7c3aed" href="simulador.html">🎮 Reto 1: Simulador<small>Monta una red virtual y supera 6 misiones</small></a>
+    <a class="cta" style="background:#2563eb" href="actividades.html">📝 Reto 2: Actividades<small>Preguntas autocorregidas con nota</small></a>
+  </div>
+</section>
+</main>
+<footer>Digitalización 4º ESO · Unidad 2: Redes · Carlos Alberto Toledo</footer>
+
+<script>
+/* ---------- barra de progreso ---------- */
+(function(){
+  const secs=[...document.querySelectorAll('#main > section.card')];
+  const links=[...document.querySelectorAll('nav.toc a')];
+  const title=s=>s.dataset.t||s.querySelector('h2').textContent.replace(/^\s*\d+\s*/,'').trim();
+  secs.forEach((s,i)=>{
+    const p=document.createElement('div');p.className='pager';
+    p.innerHTML=`<button class="prev" ${i===0?'disabled':''}>← Anterior</button><span class="count">${i+1} / ${secs.length}</span>`+
+      (i<secs.length-1?`<button class="next">Siguiente: ${title(secs[i+1])} →</button>`:'');
+    p.querySelector('.prev').onclick=()=>go(i-1);
+    const n=p.querySelector('.next');if(n)n.onclick=()=>go(i+1);
+    s.appendChild(p);
+  });
+  let cur=0;
+  function go(i,noScroll){
+    i=Math.max(0,Math.min(secs.length-1,i));cur=i;
+    secs.forEach((s,k)=>s.classList.toggle('active',k===i));
+    links.forEach(a=>a.classList.toggle('cur',a.getAttribute('href')==='#'+secs[i].id));
+    const a=links.find(a=>a.classList.contains('cur'));if(a){const box=a.parentElement;box.scrollTo({left:a.offsetLeft-box.clientWidth/2+a.offsetWidth/2,behavior:'smooth'});}
+    document.getElementById('progress').style.width=((i+1)/secs.length*100)+'%';
+    if(!noScroll){try{history.replaceState(null,'','#'+secs[i].id);}catch(e){}}
+    try{localStorage.setItem('apuntesRedes4_sec',secs[i].id);}catch(e){}
+    if(!noScroll){const y=document.querySelector('nav.toc').offsetTop;window.scrollTo({top:y,behavior:'smooth'});}
+  }
+  links.forEach(a=>a.addEventListener('click',e=>{e.preventDefault();const k=secs.findIndex(s=>'#'+s.id===a.getAttribute('href'));if(k>=0)go(k);}));
+  document.addEventListener('keydown',e=>{if(/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))return;if(e.key==='ArrowRight')go(cur+1);if(e.key==='ArrowLeft')go(cur-1);});
+  addEventListener('hashchange',()=>{const k=secs.findIndex(s=>'#'+s.id===location.hash);if(k>=0&&k!==cur)go(k);});
+  let start=secs.findIndex(s=>'#'+s.id===location.hash);
+  if(start<0){try{const id=localStorage.getItem('apuntesRedes4_sec');start=secs.findIndex(s=>s.id===id);}catch(e){}}
+  go(start<0?0:start,true);
+})();
+
+/* ---------- preguntas rápidas ---------- */
+document.querySelectorAll('.quiz').forEach(q=>{
+  const ok=+q.dataset.ok, fb=q.querySelector('.fb');
+  q.querySelectorAll('.opts button').forEach((b,i)=>b.addEventListener('click',()=>{
+    q.querySelectorAll('.opts button').forEach(x=>x.classList.remove('right','wrong'));
+    if(i===ok){b.classList.add('right');fb.textContent='✅ '+fb.dataset.fbOk;}
+    else{b.classList.add('wrong');fb.textContent='❌ '+fb.dataset.fbBad;}
+  }));
+});
+
+/* ---------- tarjetas giratorias ---------- */
+document.querySelectorAll('.flip').forEach(c=>c.addEventListener('click',()=>c.classList.toggle('on')));
+
+/* ---------- alcance PAN/LAN/MAN/WAN ---------- */
+const scales=[
+  {t:'PAN · Red de Área Personal',d:'Unos pocos metros a tu alrededor. Ej.: móvil, reloj inteligente y auriculares Bluetooth.',r:30,e:'🧍',c:'#7c3aed'},
+  {t:'LAN · Red de Área Local',d:'Una habitación, una casa o un edificio. Ej.: la red de nuestra aula o del instituto.',r:55,e:'🏫',c:'#2563eb'},
+  {t:'MAN · Red de Área Metropolitana',d:'Toda una ciudad. Ej.: la red que une los edificios del Ayuntamiento o de una universidad.',r:78,e:'🏙️',c:'#0891b2'},
+  {t:'WAN · Red de Área Amplia',d:'Un país, un continente o el mundo entero. Ej.: Internet.',r:95,e:'🌍',c:'#15803d'}];
+function drawScale(v){
+  const s=scales[v];let g='';
+  for(let i=0;i<=v;i++) g+=`<circle cx="150" cy="100" r="${scales[i].r}" fill="${scales[i].c}22" stroke="${scales[i].c}" stroke-width="2"/>`;
+  g+=`<text x="150" y="${v===0?112:112}" font-size="${36+v*6}" text-anchor="middle">${s.e}</text>`;
+  document.getElementById('scaleSvg').innerHTML=g;
+  document.getElementById('scaleInfo').innerHTML=`<h3 style="margin-top:0;color:${s.c}">${s.t}</h3><p>${s.d}</p>`;
+}
+document.getElementById('scale').addEventListener('input',e=>drawScale(+e.target.value));drawScale(0);
+
+/* ---------- animación switch / hub ---------- */
+(function(){
+  const svg=document.getElementById('swSvg');
+  const pcs=[{n:'PC-A',x:80,y:60},{n:'PC-B',x:440,y:60},{n:'PC-C',x:80,y:240},{n:'PC-D',x:440,y:240}];
+  const sw={x:260,y:150};
+  let from=0,to=1,busy=false;
+  function base(){
+    let g='';
+    pcs.forEach(p=>g+=`<line x1="${p.x}" y1="${p.y}" x2="${sw.x}" y2="${sw.y}" stroke="#94a3b8" stroke-width="4"/>`);
+    g+=`<rect x="${sw.x-60}" y="${sw.y-22}" width="120" height="44" rx="8" fill="#1e293b"/><text x="${sw.x}" y="${sw.y+6}" fill="#fff" font-size="15" text-anchor="middle" id="swLabel">SWITCH</text>`;
+    pcs.forEach((p,i)=>g+=`<g id="pc${i}"><rect x="${p.x-42}" y="${p.y-26}" width="84" height="52" rx="10" fill="#fff" stroke="#2563eb" stroke-width="2"/><text x="${p.x}" y="${p.y-2}" font-size="22" text-anchor="middle">💻</text><text x="${p.x}" y="${p.y+19}" font-size="13" text-anchor="middle">${p.n}</text></g>`);
+    svg.innerHTML=g;
+  }
+  function chips(id,get,set){
+    const box=document.getElementById(id);box.innerHTML='';
+    pcs.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p.n;b.className=i===get()?'sel':'ghost';b.onclick=()=>{set(i);chips('swFrom',()=>from,v=>from=v);chips('swTo',()=>to,v=>to=v);};box.appendChild(b);});
+  }
+  chips('swFrom',()=>from,v=>from=v);chips('swTo',()=>to,v=>to=v);
+  function dot(x1,y1,x2,y2,dur,col){return new Promise(res=>{
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('r',11);c.setAttribute('fill',col);svg.appendChild(c);
+    const t0=performance.now();(function f(t){const k=Math.min(1,(t-t0)/dur);c.setAttribute('cx',x1+(x2-x1)*k);c.setAttribute('cy',y1+(y2-y1)*k);if(k<1)requestAnimationFrame(f);else{c.remove();res();}})(t0);});}
+  function mark(i,col){const r=svg.querySelector('#pc'+i+' rect');if(r){r.setAttribute('fill',col);}}
+  async function send(hub){
+    if(busy)return; if(from===to){document.getElementById('swMsg').textContent='⚠️ El origen y el destino no pueden ser el mismo ordenador.';return;}
+    busy=true;base();svg.querySelector('#swLabel').textContent=hub?'HUB':'SWITCH';
+    const msg=document.getElementById('swMsg');msg.className='out';msg.textContent='Enviando…';
+    const a=pcs[from];await dot(a.x,a.y,sw.x,sw.y,700,'#f59e0b');
+    const targets=hub?pcs.map((p,i)=>i).filter(i=>i!==from):[to];
+    await Promise.all(targets.map(i=>dot(sw.x,sw.y,pcs[i].x,pcs[i].y,700,'#f59e0b')));
+    targets.forEach(i=>mark(i,i===to?'#dcfce7':'#fee2e2'));
+    msg.className=hub?'out bad':'out ok';
+    msg.textContent=hub?`😬 El hub ha enviado el mensaje a TODOS. ${pcs[to].n} lo usa, pero los demás lo reciben sin necesitarlo: más tráfico y menos privacidad.`:`✅ El switch sabe en qué puerto está ${pcs[to].n} (por su dirección MAC) y le envía el mensaje SOLO a él.`;
+    busy=false;
+  }
+  document.getElementById('swSend').onclick=()=>send(false);
+  document.getElementById('hubSend').onclick=()=>send(true);
+  base();
+})();
+
+/* ---------- colores T568 ---------- */
+const W={B:[['Blanco-naranja','#fff','#f97316'],['Naranja','#f97316'],['Blanco-verde','#fff','#16a34a'],['Azul','#2563eb'],['Blanco-azul','#fff','#2563eb'],['Verde','#16a34a'],['Blanco-marrón','#fff','#92400e'],['Marrón','#92400e']],
+A:[['Blanco-verde','#fff','#16a34a'],['Verde','#16a34a'],['Blanco-naranja','#fff','#f97316'],['Azul','#2563eb'],['Blanco-azul','#fff','#2563eb'],['Naranja','#f97316'],['Blanco-marrón','#fff','#92400e'],['Marrón','#92400e']]};
+function wire(k){
+  document.getElementById('wire').innerHTML=W[k].map((w,i)=>{const bg=w[2]?`repeating-linear-gradient(45deg,${w[2]} 0 7px,#fff 7px 14px)`:w[1];return `<div style="background:${bg}" title="${w[0]}"><span style="background:#fff;border-radius:4px;padding:0 3px">${i+1}</span></div>`;}).join('');
+  document.getElementById('wireTxt').innerHTML=`<b>${k==='B'?'T568B (la más usada)':'T568A'}:</b> `+W[k].map((w,i)=>`${i+1}. ${w[0]}`).join(' · ');
+  document.getElementById('showB').className=k==='B'?'':'ghost';document.getElementById('showA').className=k==='A'?'':'ghost';
+}
+document.getElementById('showB').onclick=()=>wire('B');document.getElementById('showA').onclick=()=>wire('A');wire('B');
+
+/* ---------- laboratorio de topologías ---------- */
+(function(){
+  const svg=document.getElementById('topoSvg');
+  const T={
+    estrella:{info:'<b>Estrella:</b> todos los equipos van a un aparato central (switch). ✔️ Si falla un cable, solo cae ese equipo y es fácil encontrar la avería. ❌ Si falla el centro, cae toda la red. Es la más usada hoy (¡la del aula!).',
+      nodes:[{id:'S',x:260,y:160,sw:1},{id:'1',x:260,y:40},{id:'2',x:420,y:100},{id:'3',x:400,y:270},{id:'4',x:120,y:270},{id:'5',x:100,y:100}],
+      links:[['S','1'],['S','2'],['S','3'],['S','4'],['S','5']]},
+    bus:{info:'<b>Bus:</b> todos comparten un único cable troncal. ✔️ Barata y fácil de ampliar; si falla un equipo, el resto sigue. ❌ Si se corta el cable troncal, la red queda partida y la avería es difícil de localizar. Solo puede hablar uno a la vez.',
+      nodes:[{id:'j1',x:60,y:160,j:1},{id:'j2',x:160,y:160,j:1},{id:'j3',x:260,y:160,j:1},{id:'j4',x:360,y:160,j:1},{id:'j5',x:460,y:160,j:1},{id:'1',x:60,y:60},{id:'2',x:160,y:260},{id:'3',x:260,y:60},{id:'4',x:360,y:260},{id:'5',x:460,y:60}],
+      links:[['j1','j2'],['j2','j3'],['j3','j4'],['j4','j5'],['j1','1'],['j2','2'],['j3','3'],['j4','4'],['j5','5']]},
+    anillo:{ring:1,info:'<b>Anillo:</b> cada equipo se une al siguiente formando un círculo y los datos giran en un solo sentido. ✔️ Ordenada: cada equipo transmite en su turno. ❌ Si falla cualquier cable o equipo, se bloquea TODA la red.',
+      nodes:[{id:'1',x:260,y:40},{id:'2',x:430,y:120},{id:'3',x:370,y:280},{id:'4',x:150,y:280},{id:'5',x:90,y:120}],
+      links:[['1','2'],['2','3'],['3','4'],['4','5'],['5','1']]},
+    malla:{info:'<b>Malla:</b> cada equipo está unido a muchos otros. ✔️ Muy segura: si falla un camino, hay otro. Internet funciona así entre los routers grandes. ❌ Mucho cable y muy cara.',
+      nodes:[{id:'1',x:260,y:40},{id:'2',x:430,y:120},{id:'3',x:370,y:280},{id:'4',x:150,y:280},{id:'5',x:90,y:120}],
+      links:[['1','2'],['1','3'],['1','4'],['1','5'],['2','3'],['2','4'],['2','5'],['3','4'],['3','5'],['4','5']]},
+    árbol:{info:'<b>Árbol o estrella jerárquica (híbrida):</b> varias estrellas unidas entre sí. Es la de los institutos y empresas: un switch principal y un switch en cada aula. Si falla el switch de un aula, solo cae esa aula.',
+      nodes:[{id:'S',x:260,y:50,sw:1},{id:'S1',x:140,y:160,sw:1},{id:'S2',x:380,y:160,sw:1},{id:'1',x:60,y:270},{id:'2',x:140,y:270},{id:'3',x:220,y:270},{id:'4',x:330,y:270},{id:'5',x:430,y:270}],
+      links:[['S','S1'],['S','S2'],['S1','1'],['S1','2'],['S1','3'],['S2','4'],['S2','5']]}
+  };
+  let cur='estrella',broken=new Set();
+  const btns=document.getElementById('topoBtns');
+  Object.keys(T).forEach(k=>{const b=document.createElement('button');b.textContent=k[0].toUpperCase()+k.slice(1);b.onclick=()=>{cur=k;broken.clear();draw();};b.dataset.k=k;btns.appendChild(b);});
+  function comp(t){
+    const pcs=t.nodes.filter(n=>!n.sw&&!n.j).map(n=>n.id);
+    if(t.ring){return broken.size?{ok:new Set(),n:pcs.length}:{ok:new Set(pcs),n:pcs.length};}
+    const alive=new Set(t.nodes.filter(n=>!broken.has('n'+n.id)).map(n=>n.id));
+    const adj={};t.nodes.forEach(n=>adj[n.id]=[]);
+    t.links.forEach(([a,b],i)=>{if(!broken.has('l'+i)&&alive.has(a)&&alive.has(b)){adj[a].push(b);adj[b].push(a);}});
+    let best=new Set();const seen=new Set();
+    pcs.filter(p=>alive.has(p)).forEach(p=>{if(seen.has(p))return;const st=[p],c=new Set();while(st.length){const x=st.pop();if(seen.has(x))continue;seen.add(x);if(pcs.includes(x))c.add(x);adj[x].forEach(y=>st.push(y));}if(c.size>best.size)best=c;});
+    if(best.size<2)best=new Set();
+    return {ok:best,n:pcs.length};
+  }
+  function draw(){
+    const t=T[cur];[...btns.children].forEach(b=>b.className=b.dataset.k===cur?'sel':'ghost');
+    const pos={};t.nodes.forEach(n=>pos[n.id]=n);
+    const r=comp(t);let g='';
+    t.links.forEach(([a,b],i)=>{const br=broken.has('l'+i);g+=`<line data-k="l${i}" x1="${pos[a].x}" y1="${pos[a].y}" x2="${pos[b].x}" y2="${pos[b].y}" stroke="${br?'#ef4444':'#64748b'}" stroke-width="${pos[a].j&&pos[b].j?9:5}" stroke-dasharray="${br?'8 8':''}" style="cursor:pointer"/>
+      <line data-k="l${i}" x1="${pos[a].x}" y1="${pos[a].y}" x2="${pos[b].x}" y2="${pos[b].y}" stroke="transparent" stroke-width="22" style="cursor:pointer"/>`;});
+    t.nodes.forEach(n=>{if(n.j){g+=`<circle cx="${n.x}" cy="${n.y}" r="5" fill="#64748b"/>`;return;}
+      const br=broken.has('n'+n.id);
+      if(n.sw){g+=`<g data-k="n${n.id}" style="cursor:pointer"><rect x="${n.x-38}" y="${n.y-18}" width="76" height="36" rx="7" fill="${br?'#ef4444':'#1e293b'}"/><text x="${n.x}" y="${n.y+5}" fill="#fff" font-size="13" text-anchor="middle">${br?'💥':'SWITCH'}</text></g>`;}
+      else{const ok=r.ok.has(n.id);g+=`<g data-k="n${n.id}" style="cursor:pointer"><circle cx="${n.x}" cy="${n.y}" r="26" fill="${br?'#fecaca':ok?'#dcfce7':'#fee2e2'}" stroke="${br?'#ef4444':ok?'#16a34a':'#ef4444'}" stroke-width="3"/><text x="${n.x}" y="${n.y+8}" font-size="22" text-anchor="middle">${br?'💥':'💻'}</text></g>`;}});
+    svg.innerHTML=g;
+    svg.querySelectorAll('[data-k]').forEach(el=>el.addEventListener('click',()=>{const k=el.dataset.k;broken.has(k)?broken.delete(k):broken.add(k);draw();}));
+    const m=document.getElementById('topoMsg');
+    if(!broken.size){m.className='out';m.textContent='Todo funciona. Haz clic en un cable o un aparato para romperlo.';}
+    else{const k=r.ok.size;m.className=k===r.n?'out ok':'out bad';m.textContent=`${broken.size} avería(s) → ${k} de ${r.n} ordenadores siguen comunicados entre sí.`+(t.ring&&broken.size?' En el anillo los datos ya no pueden dar la vuelta: ¡toda la red bloqueada!':'');}
+    document.getElementById('topoInfo').innerHTML='<p>'+t.info+'</p>';
+  }
+  draw();
+})();
+
+/* ---------- paquetes TCP/IP ---------- */
+(function(){
+  const st=document.getElementById('pkStage'),msg=document.getElementById('pkMsg');let busy=false;
+  document.getElementById('pkBtn').onclick=()=>{
+    if(busy)return;busy=true;st.querySelectorAll('.packet').forEach(p=>p.remove());
+    const parts=['1·HO','2·LA ','3·4º','4·ESO'];const W=st.clientWidth;
+    msg.className='out';msg.textContent='📦 TCP trocea el mensaje en 4 paquetes numerados. IP les pone la dirección de destino…';
+    const els=parts.map((p,i)=>{const d=document.createElement('div');d.className='packet';d.style.width='58px';d.textContent=p;d.style.left='70px';d.style.top=(20+i*42)+'px';st.appendChild(d);return d;});
+    const order=[2,0,3,1];
+    setTimeout(()=>{els.forEach((d,i)=>{const lane=[10,150,60,110][i];d.style.transitionDuration=(1.2+order.indexOf(i)*0.5)+'s';d.style.left=(W/2-29)+'px';d.style.top=lane+'px';});msg.textContent='🛣️ Cada paquete viaja por la red, a veces por caminos distintos…';},600);
+    setTimeout(()=>{els.forEach((d,i)=>{d.style.left=(W-150)+'px';d.style.top=(10+order.indexOf(i)*42)+'px';});msg.textContent='😮 ¡Han llegado desordenados! (3, 1, 4, 2)';},3200);
+    setTimeout(()=>{els.forEach((d,i)=>{d.style.transitionDuration='0.8s';d.style.top=(10+i*42)+'px';});msg.className='out ok';msg.textContent='✅ TCP los ordena por su número y reconstruye: “HOLA 4ºESO”. Si faltara uno, lo pediría otra vez.';busy=false;},5600);
+  };
+})();
+
+/* ---------- comprobador IP ---------- */
+function parseIP(s){const p=s.trim().split('.');if(p.length!==4)return {ok:false,why:'Debe tener exactamente 4 números separados por puntos.'};
+  for(const x of p){if(!/^\d{1,3}$/.test(x))return {ok:false,why:`“${x||'(vacío)'}” no es un número válido.`};if(+x>255)return {ok:false,why:`${x} es mayor que 255. Cada número va del 0 al 255.`};}
+  return {ok:true,n:p.map(Number)};}
+document.getElementById('ipBtn').onclick=()=>{
+  const r=parseIP(document.getElementById('ipIn').value),o=document.getElementById('ipOut');
+  if(!r.ok){o.className='out bad';o.textContent='❌ No es válida. '+r.why;return;}
+  const [a,b]=r.n;const priv=a===10||(a===192&&b===168)||(a===172&&b>=16&&b<=31);
+  o.className='out ok';o.textContent=`✅ IP válida. Es ${priv?'PRIVADA (solo vale dentro de una red local)':a===127?'de LOOPBACK (el propio equipo)':'PÚBLICA (puede estar en Internet)'}. Red: ${r.n.slice(0,3).join('.')}.___ · Equipo: ${r.n[3]}`;
+};
+document.getElementById('ipIn').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('ipBtn').click();});
+
+/* ---------- misma red ---------- */
+(function(){
+  let pair,streak=0;const R=n=>Math.floor(Math.random()*n);
+  function nuevo(){const a=[192,168,R(60)+1,R(250)+2];const b=a.slice();const same=Math.random()<.5;
+    if(same){b[3]=(a[3]+R(100)+1)%253+1;}else{const k=Math.random()<.7?2:1;b[k]=(a[k]+R(5)+1)%250;b[3]=Math.random()<.5?a[3]:R(250)+2;}
+    pair={a,b,same:a[0]===b[0]&&a[1]===b[1]&&a[2]===b[2]};
+    document.getElementById('pairBox').textContent=a.join('.')+'   y   '+b.join('.');}
+  function resp(v){const o=document.getElementById('pairOut');
+    if(v===pair.same){streak++;o.className='out ok';o.textContent=`✅ ¡Bien! ${pair.same?'Los 3 primeros números coinciden.':'Los 3 primeros números NO coinciden.'} Racha: ${streak}${streak>=5?' 🏆 ¡Eres un crack de las IP!':''}`;}
+    else{streak=0;o.className='out bad';o.textContent=`❌ Fíjate en los 3 primeros números: ${pair.a.slice(0,3).join('.')} y ${pair.b.slice(0,3).join('.')}. Racha: 0`;}
+    setTimeout(nuevo,900);}
+  document.getElementById('pairNew').onclick=nuevo;document.getElementById('pairYes').onclick=()=>resp(true);document.getElementById('pairNo').onclick=()=>resp(false);nuevo();
+})();
+</script>
+</body>
+</html>

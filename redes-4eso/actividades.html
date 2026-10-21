@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Actividades de redes · Digitalización 4º ESO</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--ink:#1d2433;--muted:#5b6476;--line:#dbe2ec;--pri:#2563eb;--pri-soft:#e3ecff;--ok:#15803d;--ok-soft:#dcfce7;--bad:#b91c1c;--bad-soft:#fee2e2;--warn-soft:#fef3c7}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Ubuntu,sans-serif;background:var(--bg);color:var(--ink);line-height:1.5;font-size:16px}
+header{background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;padding:20px 16px}
+header .wrap{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+header h1{margin:0;font-size:24px}header a{color:#fff;font-size:14px}
+.wrap{max-width:860px;margin:0 auto;padding:0 16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin:16px 0}
+.card h2{margin:0 0 4px;font-size:20px}
+.q{border-top:1px solid var(--line);padding:12px 0}
+.q:first-of-type{border-top:0}
+.qt{font-weight:600;margin-bottom:6px;user-select:none;-webkit-user-select:none}
+.opts{display:flex;flex-direction:column;gap:6px}
+.opts label{display:flex;gap:8px;align-items:flex-start;padding:7px 10px;border:1px solid var(--line);border-radius:10px;cursor:pointer;user-select:none;-webkit-user-select:none}
+.opts label:hover{background:#f8fafc}
+.opts.inline{flex-direction:row;flex-wrap:wrap}
+select,input[type=text]{font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:9px;max-width:100%}
+input[type=text]{width:100%;max-width:320px}
+button{font:inherit;border:0;border-radius:10px;padding:9px 15px;background:var(--pri);color:#fff;cursor:pointer}
+button.ghost{background:var(--pri-soft);color:var(--pri)}
+.mono,pre{font-family:ui-monospace,"Ubuntu Mono",Menlo,Consolas,monospace}
+pre.term{background:#0f172a;color:#d1fae5;border-radius:12px;padding:12px;overflow-x:auto;font-size:13px;user-select:none;-webkit-user-select:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.chip{padding:6px 10px;border-radius:999px;border:2px solid #94a3b8;font-size:14px;cursor:pointer;background:#fff;user-select:none}
+.chip.used{opacity:.3;pointer-events:none}
+.seq{min-height:44px;border:2px dashed var(--line);border-radius:12px;padding:6px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.seq .chip{cursor:default}
+table{border-collapse:collapse;width:100%;font-size:14px}th,td{border:1px solid var(--line);padding:6px 8px;text-align:left}th{background:var(--pri-soft)}
+.fb{margin-top:6px;padding:7px 10px;border-radius:9px;font-size:14px;display:none}
+.done .fb{display:block}
+.fb.ok{background:var(--ok-soft);color:var(--ok)}.fb.bad{background:var(--bad-soft);color:var(--bad)}
+#bar{position:sticky;top:0;z-index:10;background:#fffffff0;border-bottom:1px solid var(--line);padding:8px 0;font-size:14px}
+#bar .wrap{display:flex;gap:14px;flex-wrap:wrap;justify-content:space-between}
+.warn{color:#b45309;font-weight:600}
+#result{text-align:center}
+#result .big{font-size:56px;font-weight:800;margin:4px 0}
+svg{background:#f8fafc;border:1px solid var(--line);border-radius:10px}
+.topos{display:flex;flex-wrap:wrap;gap:14px}
+.topos > div{flex:1 1 220px}
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>📝 Actividades: Redes</h1><a href="index.html">← Volver a los apuntes</a></div></header>
+
+<div class="wrap" id="startBox">
+  <div class="card">
+    <h2>👋 Instrucciones</h2>
+    <ul>
+      <li>Cada alumno tiene <b>preguntas, datos y orden distintos</b>. Copiar del compañero no sirve.</li>
+      <li>Muchas preguntas son de <b>leer y razonar</b> (IPs, terminal, averías): tienes los apuntes abiertos en otra pestaña, úsalos.</li>
+      <li>La página cuenta las veces que sales de ella, y aparece en tu PDF.</li>
+      <li>Al terminar pulsa <b>Corregir</b>: verás tu nota y los fallos explicados, y podrás descargar el <b>PDF</b> para subirlo a tu Google Sites.</li>
+    </ul>
+    <p><label>Nombre y apellidos<br><input type="text" id="nm" autocomplete="off"></label></p>
+    <p><label>Grupo<br><input type="text" id="gr" placeholder="Ej.: 4º A" autocomplete="off"></label></p>
+    <button id="go">Empezar ▶</button>
+  </div>
+</div>
+
+<div id="bar" style="display:none"><div class="wrap"><span id="who"></span><span>⏱️ <span id="clock">0:00</span></span><span id="leaves">Salidas de la página: 0</span><span id="answered"></span></div></div>
+<div class="wrap" id="quiz" style="display:none">
+  <div id="blocks"></div>
+  <div class="card" id="endCard"><button id="grade">✅ Corregir</button> <span class="muted" style="color:var(--muted);font-size:14px">Revisa antes: después no podrás cambiar respuestas.</span></div>
+  <div class="card" id="result" style="display:none"></div>
+</div>
+
+<script>
+const R=n=>Math.floor(Math.random()*n);
+const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=R(i+1);[a[i],a[j]]=[a[j],a[i]];}return a;};
+const pick=(a,n)=>shuf(a).slice(0,n);
+const $=id=>document.getElementById(id);
+let uid=0;const nid=()=>'x'+(++uid);
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+
+/* ---------- utilidades de pregunta ---------- */
+function mcItem(q,correct,wrongs,expl,inline){
+  const id=nid();const opts=shuf([correct,...wrongs]);
+  return {html:`<div class="qt">${q}</div><div class="opts ${inline?'inline':''}">${opts.map(o=>`<label><input type="radio" name="${id}" value="${esc(o)}"> <span>${o}</span></label>`).join('')}</div>`,
+    get:root=>{const r=root.querySelector(`input[name=${id}]:checked`);return r?r.value:null;},
+    ok:v=>v===String(correct), correct:correct, expl, pts:1};
+}
+function selItem(q,options,correct,expl){
+  const id=nid();
+  return {html:`<div class="qt">${q}</div><select id="${id}"><option value="">— elige —</option>${shuf(options).map(o=>`<option>${o}</option>`).join('')}</select>`,
+    get:()=>$(id).value||null, ok:v=>Array.isArray(correct)?correct.includes(v):v===correct, correct:Array.isArray(correct)?correct.join(' o '):correct, expl, pts:1};
+}
+function textItem(q,correct,norm,expl,ph){
+  const id=nid();
+  return {html:`<div class="qt">${q}</div><input type="text" id="${id}" autocomplete="off" spellcheck="false" placeholder="${ph||''}">`,
+    get:()=>$(id).value.trim()||null, ok:v=>norm(v)===norm(correct), correct, expl, pts:1};
+}
+const randIP3=()=>`192.168.${R(200)+10}`;
+const randMAC=()=>Array.from({length:6},()=>R(256).toString(16).padStart(2,'0')).join(':');
+
+/* ---------- BLOQUES ---------- */
+const MC=[
+ ['Una red de ordenadores es…','Un conjunto de dispositivos conectados que comparten datos y recursos',['Un programa para navegar por Internet','Un ordenador muy potente que guarda páginas web','El cable que une el ordenador al enchufe'],'Red = equipos conectados que se comunican y comparten.'],
+ ['¿Qué aparato une dos redes distintas, por ejemplo tu casa con Internet?','Router',['Switch','Tarjeta de red','Cable RJ45'],'El router encamina paquetes entre redes distintas.'],
+ ['¿Qué aparato une los ordenadores de una red local y envía cada mensaje solo a su destinatario?','Switch',['Router','Módem','Servidor'],'El switch aprende la MAC de cada puerto.'],
+ ['¿Qué componente convierte los datos del ordenador en señales que viajan por el cable o el aire?','Tarjeta de red',['Switch','Router','Disco duro'],'La tarjeta de red (NIC) es la “boca y oídos” del PC.'],
+ ['¿Qué dispositivo crea una red WiFi y la une con la red de cable?','Punto de acceso',['Switch','Servidor','Repetidor de TDT'],'El punto de acceso (AP) da conexión inalámbrica.'],
+ ['Un ordenador que ofrece servicios (web, archivos, correo) a otros se llama…','Servidor',['Cliente','Router','Hub'],'El servidor “sirve” a los clientes.'],
+ ['¿Qué protocolo usan todos los equipos de Internet para entenderse?','TCP/IP',['HTML','USB','RJ45'],'TCP/IP es el “idioma” común de Internet.'],
+ ['¿Qué hace TCP con un mensaje?','Lo trocea en paquetes numerados y los reordena al llegar',['Le pone la dirección MAC del router','Lo convierte en luz','Lo cifra para que nadie lo lea'],'TCP trocea, numera y comprueba que llegan todos.'],
+ ['El conector del cable de red de par trenzado se llama…','RJ45',['USB-C','HDMI','Coaxial'],'RJ45: el conector transparente del cable de red.'],
+ ['¿Cuántos hilos de cobre tiene un cable de par trenzado?','8 (4 pares)',['4 (2 pares)','2','16 (8 pares)'],'8 hilos trenzados de dos en dos.'],
+ ['¿Qué viaja por una fibra óptica?','Pulsos de luz',['Corriente eléctrica','Ondas de radio','Sonido'],'Luz por un hilo de vidrio o plástico.'],
+ ['¿Qué medio de transmisión es más rápido y llega más lejos?','Fibra óptica',['Par trenzado','Cable coaxial','Bluetooth'],'La fibra es la “autopista” de los datos.'],
+ ['Una dirección IPv4 está formada por…','4 números del 0 al 255 separados por puntos',['6 parejas de letras y números','8 números del 0 al 9','4 letras y 4 números'],'Ejemplo: 192.168.1.25'],
+ ['¿Por qué se está pasando de IPv4 a IPv6?','Porque IPv4 se queda sin direcciones para tantos dispositivos',['Porque IPv6 es más fácil de recordar','Porque IPv4 no funciona con WiFi','Porque IPv6 no necesita router'],'IPv4: unos 4.300 millones de direcciones; IPv6: muchísimas más.'],
+ ['¿Quién asigna la dirección MAC de una tarjeta de red?','El fabricante',['El router, cada vez que te conectas','El profesor','La compañía de Internet'],'La MAC viene grabada de fábrica.'],
+ ['¿Qué es la puerta de enlace?','La IP del router, por donde se sale a otras redes',['La contraseña de la WiFi','El puerto 1 del switch','La IP más alta de la red'],'Para salir de tu red, los paquetes van a la puerta de enlace.'],
+ ['¿Para qué sirve el DHCP?','Para que el router reparta las IP automáticamente',['Para cifrar la WiFi','Para conectar dos switch','Para medir la velocidad de Internet'],'DHCP = IP automática (dinámica).'],
+ ['En la terminal de Ubuntu, ¿qué comando muestra tu IP y tu MAC?','ip a',['ping','ls','sudo ip'],'ip a (o ip addr). No necesita permisos.'],
+ ['¿Qué comando sirve para comprobar si llegas a otro equipo?','ping',['ip a','cd','mkdir'],'ping envía paquetes y espera respuesta.'],
+ ['¿Qué topología es la más usada hoy en redes locales?','Estrella',['Bus','Anillo','Malla completa'],'Todos al switch central: como el aula.'],
+ ['¿En qué topología un fallo en cualquier punto bloquea toda la red?','Anillo',['Estrella','Malla','Árbol'],'Los datos giran en un sentido: si se corta, no dan la vuelta.'],
+ ['La luz de un puerto del switch del aula está apagada. ¿Qué significa?','Que en ese puerto no hay un cable conectado o el equipo está apagado',['Que ese ordenador no tiene IP','Que el router no tiene Internet','Que el switch está sin configurar'],'La luz Link/Act indica que hay enlace físico.'],
+ ['El switch del aula (TP-Link TL-SF1016D) es “no gestionable”. Eso significa que…','No se configura: se enchufa y funciona',['Necesita contraseña de administrador','Solo funciona con WiFi','Hay que instalarle un programa'],'Plug and play.'],
+ ['¿Cuál es la principal ventaja de la topología en malla?','Si falla un camino, hay otros alternativos',['Usa muy poco cable','Es la más barata','Solo necesita un switch'],'Muy segura pero cara: mucho cable.']
+];
+const VF=[
+ ['La WiFi y la Internet son lo mismo.',false,'La WiFi es tu red local; el router la conecta con Internet.'],
+ ['Dos equipos de la misma red pueden tener la misma IP sin problema.',false,'Se produce un conflicto de IP.'],
+ ['Una IP que empieza por 192.168. es privada.',true,'Solo vale dentro de una red local.'],
+ ['Para conectar los PCs al switch del aula hace falta un cable cruzado especial.',false,'Tiene Auto MDI/MDIX: vale cualquier cable.'],
+ ['Internet es una red WAN.',true,'Es la WAN más grande del mundo.'],
+ ['Bluetooth se usa sobre todo para redes PAN.',true,'Pocos metros: auriculares, relojes…'],
+ ['La dirección MAC la graba el fabricante en la tarjeta de red.',true,'Es como el DNI del aparato.'],
+ ['Un cable de par trenzado puede medir como máximo unos 100 metros.',true,'Más allá la señal se degrada.'],
+ ['En la topología en bus todos los equipos comparten un mismo cable troncal.',true,'Si se corta, la red se parte.'],
+ ['192.168.1.256 es una dirección IP válida.',false,'Cada número va de 0 a 255.'],
+ ['El router de casa suele llevar dentro también un switch y un punto de acceso WiFi.',true,'Es un “todo en uno”.'],
+ ['En Ubuntu el comando ping necesita permisos de administrador (sudo).',false,'Cualquier usuario puede usarlo.']
+];
+const SCOPE={PAN:['Tus auriculares Bluetooth conectados al móvil','Un reloj inteligente sincronizado con el móvil','Un ratón inalámbrico conectado a un portátil'],
+ LAN:['Los ordenadores del aula de informática','La WiFi de tu casa','La red de una oficina dentro de un edificio','Dos consolas jugando en red en la misma casa'],
+ MAN:['La red que une las bibliotecas municipales de una ciudad','La red de cámaras de tráfico de una ciudad','La red de una universidad con campus repartidos por la ciudad'],
+ WAN:['Internet','La red de un banco con oficinas por toda España','La red de una empresa con sedes en varios países']};
+const DEV=[['Router','Une la red local con otras redes (Internet)'],['Switch','Une los equipos de la red local y envía cada mensaje a su destinatario'],['Tarjeta de red','Convierte los datos en señales para enviarlos por el medio'],['Punto de acceso','Permite conectarse a la red sin cables (WiFi)'],['Servidor','Ofrece servicios como páginas web, archivos o correo'],['Cable RJ45','Medio físico de cobre por el que viajan las señales']];
+
+const BLOCKS=[];
+// 1. Test
+BLOCKS.push(()=>({t:'🧠 Test de conceptos',pt:'Test de conceptos',items:pick(MC,6).map(m=>mcItem(m[0],m[1],m[2],m[3]))}));
+// 2. V/F
+BLOCKS.push(()=>({t:'✔️ Verdadero o falso',pt:'Verdadero o falso',items:pick(VF,4).map(v=>mcItem(v[0],v[1]?'Verdadero':'Falso',[v[1]?'Falso':'Verdadero'],v[2],true))}));
+// 3. Alcance
+BLOCKS.push(()=>{const types=Object.keys(SCOPE);const items=shuf(types).map(k=>({k,ex:SCOPE[k][R(SCOPE[k].length)]}));
+  return {t:'📏 ¿Qué tipo de red es?',pt:'Tipos de red por alcance',items:items.map(i=>selItem(`“${i.ex}”`,['PAN','LAN','MAN','WAN'],i.k,`Es una ${i.k}.`))};});
+// 4. Relacionar
+BLOCKS.push(()=>{const d=pick(DEV,5);const funcs=d.map(x=>x[1]);return {t:'🔗 Relaciona cada aparato con su función',pt:'Hardware de red',items:d.map(x=>selItem(`<b>${x[0]}</b>`,funcs,x[1],`${x[0]}: ${x[1].toLowerCase()}.`))};});
+// 5. IP válida
+BLOCKS.push(()=>{const gens=[
+  ()=>({ip:`${R(223)+1}.${R(256)}.${R(256)}.${R(254)+1}`,ok:true,w:'Cuatro números entre 0 y 255.'}),
+  ()=>({ip:`192.168.${R(256)}.${R(254)+1}`,ok:true,w:'Cuatro números entre 0 y 255.'}),
+  ()=>{const a=[192,168,R(256),R(254)+1];const k=R(4);a[k]=256+R(144);return {ip:a.join('.'),ok:false,w:`${a[k]} es mayor que 255.`};},
+  ()=>({ip:`192.168.${R(256)}`,ok:false,w:'Solo tiene 3 números; necesita 4.'}),
+  ()=>({ip:`10.${R(256)}.${R(256)}.${R(256)}.${R(256)}`,ok:false,w:'Tiene 5 números; deben ser 4.'}),
+  ()=>({ip:`172.${R(16)+16}.${'abcdef'[R(6)]}.${R(254)+1}`,ok:false,w:'Tiene una letra: solo puede haber números.'})];
+  const sel=[gens[R(2)](),gens[2](),gens[3+R(3)](),gens[R(gens.length)]()];
+  return {t:'🔢 ¿Es válida esta dirección IPv4?',pt:'IP válidas',items:shuf(sel).map(s=>mcItem(`<span class="mono" style="font-size:18px">${s.ip}</span>`,s.ok?'Válida':'No válida',[s.ok?'No válida':'Válida'],s.w,true))};});
+// 6. Misma red
+BLOCKS.push(()=>{const items=[];const want=shuf([true,true,false,false]);
+  want.forEach(same=>{const a=[192,168,R(200)+10,R(240)+5];const b=a.slice();
+    if(same){do{b[3]=R(250)+2;}while(b[3]===a[3]);}else{const k=Math.random()<.75?2:1;b[k]=a[k]+R(9)+1;if(Math.random()<.5)b[3]=a[3];}
+    items.push(mcItem(`<span class="mono" style="font-size:17px">${a.join('.')}</span> y <span class="mono" style="font-size:17px">${b.join('.')}</span> (máscara 255.255.255.0)`,same?'Misma red':'Redes distintas',[same?'Redes distintas':'Misma red'],same?'Los 3 primeros números coinciden.':`Fíjate: ${a.slice(0,3).join('.')} ≠ ${b.slice(0,3).join('.')}.`,true));});
+  return {t:'🤝 ¿Están en la misma red?',pt:'Misma red',items};});
+// 7. T568B
+BLOCKS.push(()=>{const ORDER=['Blanco-naranja','Naranja','Blanco-verde','Azul','Blanco-azul','Verde','Blanco-marrón','Marrón'];
+  const COL={'Blanco-naranja':'#f97316','Naranja':'#f97316','Blanco-verde':'#16a34a','Verde':'#16a34a','Azul':'#2563eb','Blanco-azul':'#2563eb','Blanco-marrón':'#92400e','Marrón':'#92400e'};
+  const id=nid();const sh=shuf(ORDER);
+  const item={html:`<div class="qt">Toca los colores en el orden de la norma <b>T568B</b> (del hilo 1 al 8).</div>
+    <div class="chips" id="${id}c">${sh.map(c=>`<span class="chip" data-c="${c}" style="border-color:${COL[c]};${c.startsWith('Blanco')?'background:repeating-linear-gradient(45deg,#fff 0 6px,'+COL[c]+'33 6px 12px)':'background:'+COL[c]+'22'}">${c}</span>`).join('')}</div>
+    <div class="seq" id="${id}s"><span style="color:#94a3b8;font-size:14px">1 → 8</span></div><p><button class="ghost" type="button" id="${id}r">↺ Empezar de nuevo</button></p>`,
+    seq:[],get(){return this.seq.length?this.seq:null;},
+    score(v){if(!v)return 0;let k=0;ORDER.forEach((c,i)=>{if(v[i]===c)k++;});return k/8*2;},
+    ok(v){return this.score(v)===2;},correct:ORDER.join(', '),expl:'Truco: los blancos van en las posiciones impares (1,3,5,7).',pts:2,
+    init(){const s=$(id+'s');const self=this;
+      $(id+'c').querySelectorAll('.chip').forEach(ch=>ch.onclick=()=>{if(self.locked)return;if(!self.seq.length)s.innerHTML='';self.seq.push(ch.dataset.c);ch.classList.add('used');const n=document.createElement('span');n.className='chip';n.style.borderColor=COL[ch.dataset.c];n.textContent=self.seq.length+'. '+ch.dataset.c;s.appendChild(n);updCount();});
+      $(id+'r').onclick=()=>{if(self.locked)return;self.seq=[];s.innerHTML='<span style="color:#94a3b8;font-size:14px">1 → 8</span>';$(id+'c').querySelectorAll('.chip').forEach(c=>c.classList.remove('used'));updCount();};}};
+  return {t:'🌈 El cable por dentro',pt:'Colores T568B',items:[item]};});
+// 8. Topologías
+const TOPO={
+ Estrella:()=>{let g='<rect x="85" y="58" width="50" height="24" rx="5" fill="#1e293b"/>';[[110,15],[195,45],[175,125],[45,125],[25,45]].forEach(p=>g=`<line x1="110" y1="70" x2="${p[0]}" y2="${p[1]}" stroke="#64748b" stroke-width="3"/>`+g+`<circle cx="${p[0]}" cy="${p[1]}" r="11" fill="#c7d2fe" stroke="#4f46e5"/>`);return g;},
+ Bus:()=>{let g='<line x1="10" y1="70" x2="210" y2="70" stroke="#64748b" stroke-width="6"/>';[30,80,130,180].forEach((x,i)=>{const y=i%2?115:25;g+=`<line x1="${x}" y1="70" x2="${x}" y2="${y}" stroke="#64748b" stroke-width="3"/><circle cx="${x}" cy="${y}" r="11" fill="#c7d2fe" stroke="#4f46e5"/>`;});return g;},
+ Anillo:()=>{const P=[[110,15],[190,55],[160,125],[60,125],[30,55]];let g='';P.forEach((p,i)=>{const q=P[(i+1)%5];g+=`<line x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}" stroke="#64748b" stroke-width="3"/>`;});P.forEach(p=>g+=`<circle cx="${p[0]}" cy="${p[1]}" r="11" fill="#c7d2fe" stroke="#4f46e5"/>`);return g;},
+ Malla:()=>{const P=[[110,15],[190,55],[160,125],[60,125],[30,55]];let g='';P.forEach((p,i)=>P.forEach((q,j)=>{if(j>i)g+=`<line x1="${p[0]}" y1="${p[1]}" x2="${q[0]}" y2="${q[1]}" stroke="#64748b" stroke-width="2"/>`;}));P.forEach(p=>g+=`<circle cx="${p[0]}" cy="${p[1]}" r="11" fill="#c7d2fe" stroke="#4f46e5"/>`);return g;},
+ 'Árbol (híbrida)':()=>{let g='';const S=[[110,18],[55,70],[165,70]];g+=`<line x1="110" y1="18" x2="55" y2="70" stroke="#64748b" stroke-width="3"/><line x1="110" y1="18" x2="165" y2="70" stroke="#64748b" stroke-width="3"/>`;[[25,125],[55,125],[85,125]].forEach(p=>g+=`<line x1="55" y1="70" x2="${p[0]}" y2="${p[1]}" stroke="#64748b" stroke-width="3"/><circle cx="${p[0]}" cy="${p[1]}" r="10" fill="#c7d2fe" stroke="#4f46e5"/>`);[[145,125],[185,125]].forEach(p=>g+=`<line x1="165" y1="70" x2="${p[0]}" y2="${p[1]}" stroke="#64748b" stroke-width="3"/><circle cx="${p[0]}" cy="${p[1]}" r="10" fill="#c7d2fe" stroke="#4f46e5"/>`);S.forEach(s=>g+=`<rect x="${s[0]-20}" y="${s[1]-10}" width="40" height="20" rx="4" fill="#1e293b"/>`);return g;}};
+BLOCKS.push(()=>{const names=Object.keys(TOPO);const ch=pick(names,3);
+  return {t:'🕸️ ¿Qué topología es?',pt:'Topologías',items:ch.map(n=>selItem(`<svg viewBox="0 0 220 140" width="220" height="140">${TOPO[n]()}</svg>`,names,n,`Es la topología en ${n.toLowerCase()}.`))};});
+// 9. Terminal
+BLOCKS.push(()=>{const net=randIP3(),host=R(200)+20,ip=`${net}.${host}`,mac=randMAC(),pc=`aula-pc${String(R(30)+1).padStart(2,'0')}`;
+  const other=`192.168.${(+net.split('.')[2]+R(20)+3)%250}`;
+  const term=`<pre class="term">alumno@${pc}:~$ ip a
+1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+2: enp3s0: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc fq_codel state UP
+    link/ether ${mac} brd ff:ff:ff:ff:ff:ff
+    inet ${ip}/24 brd ${net}.255 scope global dynamic enp3s0
+    inet6 fe80::${R(65535).toString(16)}:${R(65535).toString(16)}/64 scope link</pre>`;
+  const it=[textItem(term+'¿Cuál es la <b>dirección IP</b> de la tarjeta de cable (enp3s0)? (sin el /24)',ip,v=>(v||'').replace(/\/\d+$/,'').trim(),'Está en la línea “inet” de enp3s0.','192.168…'),
+    textItem('¿Cuál es su <b>dirección MAC</b>?',mac,v=>(v||'').toLowerCase().replace(/-/g,':').trim(),'Está en la línea “link/ether”.','xx:xx:xx:xx:xx:xx'),
+    mcItem('¿En qué red está este equipo?',`${net}.0`,[`${other}.0`,'127.0.0.0'],`Los 3 primeros números de su IP: ${net}.`,true)];
+  return {t:'🐧 Lee la terminal',pt:'Leer la terminal',items:it};});
+// 10. Detective
+BLOCKS.push(()=>{const net=randIP3(),gw=`${net}.1`;const names=['PC-1','PC-2','PC-3','PC-4'];const hosts=shuf([10,11,12,13,14,15,16,17,18,19,20,21]).slice(0,4);
+  const rows=names.map((n,i)=>({n,ip:`${net}.${hosts[i]}`,gw,cable:'Sí'}));
+  const F=[
+   {r:'Tiene una IP de otra red',f:x=>{x.ip=`192.168.${(+net.split('.')[2]+R(5)+1)%250}.${hosts[0]}`;}},
+   {r:'No tiene el cable conectado',f:x=>{x.cable='No';}},
+   {r:'Tiene mal la puerta de enlace',f:x=>{x.gw=`${net}.${R(80)+150}`;}},
+   {r:'Tiene una IP no válida',f:x=>{x.ip=`${net}.${256+R(100)}`;}},
+   {r:'Tiene la misma IP que otro equipo',dup:1}];
+  const fk=F[R(F.length)];let bad=R(4),also=null;
+  if(fk.dup){also=(bad+1+R(3))%4;rows[bad].ip=rows[also].ip;}else fk.f(rows[bad]);
+  const table=`<table><tr><th>Equipo</th><th>IP</th><th>Puerta de enlace</th><th>Cable</th></tr>${rows.map(r=>`<tr><td>${r.n}</td><td class="mono">${r.ip}</td><td class="mono">${r.gw}</td><td>${r.cable}</td></tr>`).join('')}</table>`;
+  const intro=`<div class="qt">La red del aula es <b class="mono">${net}.0</b> y el router es <b class="mono">${gw}</b>. Uno de los equipos tiene un problema.</div>${table}<br>`;
+  const who=selItem(intro+'¿Qué equipo tiene el problema?',names,also!==null?[names[bad],names[also]]:names[bad],`Era ${names[bad]}${also!==null?' (o '+names[also]+')':''}.`);
+  const why=selItem('¿Cuál es el problema?',F.map(x=>x.r),fk.r,`El problema: ${fk.r.toLowerCase()}.`);
+  return {t:'🕵️ Detective de averías',pt:'Detective de averías',items:[who,why]};});
+// 11. Ping
+BLOCKS.push(()=>{const net=randIP3();const me=`${net}.${R(50)+20}`,dst=`${net}.${R(50)+100}`;
+  const T={ok:{o:`PING ${dst} (${dst}) 56(84) bytes of data.\n64 bytes from ${dst}: icmp_seq=1 ttl=64 time=0.4${R(9)} ms\n64 bytes from ${dst}: icmp_seq=2 ttl=64 time=0.3${R(9)} ms\n64 bytes from ${dst}: icmp_seq=3 ttl=64 time=0.5${R(9)} ms\n\n--- ${dst} ping statistics ---\n3 packets transmitted, 3 received, 0% packet loss`,a:'Hay comunicación entre los dos equipos'},
+    host:{o:`PING ${dst} (${dst}) 56(84) bytes of data.\nFrom ${me} icmp_seq=1 Destination Host Unreachable\nFrom ${me} icmp_seq=2 Destination Host Unreachable\nFrom ${me} icmp_seq=3 Destination Host Unreachable\n\n--- ${dst} ping statistics ---\n3 packets transmitted, 0 received, +3 errors, 100% packet loss`,a:'Mi equipo tiene red, pero el otro equipo no responde (apagado, sin cable o IP equivocada)'},
+    net:{o:`ping: connect: Network is unreachable`,a:'Mi propio equipo no tiene red (sin cable o sin IP)'}};
+  const ks=pick(Object.keys(T),2);const all=Object.values(T).map(x=>x.a);
+  return {t:'📡 ¿Qué significa este ping?',pt:'Interpretar ping',items:ks.map(k=>mcItem(`<pre class="term">alumno@aula:~$ ping ${dst}\n${T[k].o}</pre>¿Qué significa?`,T[k].a,all.filter(a=>a!==T[k].a),k==='ok'?'0% packet loss = todos los paquetes han llegado.':k==='host'?'“Destination Host Unreachable”: nadie contesta en esa IP.':'“Network is unreachable”: el problema está en tu propio equipo.'))};});
+
+/* ---------- MONTAJE ---------- */
+let BL=[],items=[],start=0,leaves=0,locked=false,timer;
+function updCount(){const n=items.filter(i=>i.get(document)!==null).length;$('answered').textContent=`Respondidas: ${n}/${items.length}`;}
+function build(){
+  BL=shuf(BLOCKS).map(f=>f());items=[];
+  $('blocks').innerHTML=BL.map((b,bi)=>`<div class="card" id="b${bi}"><h2>${bi+1}. ${b.t}</h2>${b.items.map((it,ii)=>`<div class="q" id="q${bi}_${ii}">${it.html}<div class="fb"></div></div>`).join('')}</div>`).join('');
+  BL.forEach(b=>b.items.forEach(it=>{items.push(it);if(it.init)it.init();}));
+  document.querySelectorAll('#blocks input,#blocks select').forEach(el=>el.addEventListener('change',updCount));
+  document.querySelectorAll('#blocks input[type=text]').forEach(el=>{el.addEventListener('input',updCount);el.addEventListener('paste',e=>{e.preventDefault();alert('Escríbelo tú: leer la terminal es parte del ejercicio 😉');});});
+  document.querySelectorAll('.qt,pre.term').forEach(el=>{el.addEventListener('copy',e=>e.preventDefault());el.addEventListener('contextmenu',e=>e.preventDefault());});
+  updCount();
+}
+document.addEventListener('visibilitychange',()=>{if(document.hidden&&start&&!locked){leaves++;$('leaves').innerHTML=`<span class="warn">Salidas de la página: ${leaves}</span>`;}});
+$('go').onclick=()=>{const n=$('nm').value.trim(),g=$('gr').value.trim();if(n.split(/\s+/).length<2||!g){alert('Escribe tu nombre y apellidos y tu grupo.');return;}
+  $('startBox').style.display='none';$('quiz').style.display='block';$('bar').style.display='block';$('who').textContent=`👤 ${n} · ${g}`;
+  build();start=Date.now();timer=setInterval(()=>{const s=Math.floor((Date.now()-start)/1000);$('clock').textContent=`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;},1000);scrollTo(0,0);};
+
+function grade(){
+  const blank=items.filter(i=>i.get(document)===null).length;
+  if(blank&&!confirm(`Te quedan ${blank} preguntas sin responder. ¿Corregir igualmente?`))return;
+  locked=true;clearInterval(timer);
+  let got=0,max=0;const per=[],fails=[];
+  BL.forEach((b,bi)=>{let bg=0,bm=0;b.items.forEach((it,ii)=>{const v=it.get(document);const sc=it.score?it.score(v):(v!==null&&it.ok(v)?it.pts:0);bg+=sc;bm+=it.pts;it.locked=true;
+      const q=$(`q${bi}_${ii}`);q.classList.add('done');const fb=q.querySelector('.fb');const full=sc===it.pts;
+      fb.className='fb '+(full?'ok':'bad');fb.innerHTML=full?`✅ ¡Correcto! ${it.expl}`:`❌ ${sc>0?'Parcialmente correcto. ':''}Respuesta correcta: <b>${it.correct}</b>. ${it.expl}`;
+      if(!full)fails.push({b:b.pt,c:String(it.correct).replace(/<[^>]+>/g,'')});});
+    got+=bg;max+=bm;per.push({t:b.pt,g:bg,m:bm});});
+  document.querySelectorAll('#blocks input,#blocks select').forEach(el=>el.disabled=true);
+  const nota=Math.round(got/max*100)/10;const secs=Math.floor((Date.now()-start)/1000);
+  let tries=1;try{const k='actRedes_'+$('nm').value.trim().toLowerCase();tries=(+localStorage.getItem(k)||0)+1;localStorage.setItem(k,tries);}catch(e){}
+  const data={name:$('nm').value.trim(),group:$('gr').value.trim(),nota,got,max,per,fails,secs,leaves,tries,date:new Date()};
+  $('result').style.display='block';$('endCard').style.display='none';
+  $('result').innerHTML=`<h2>Tu nota</h2><div class="big" style="color:${nota>=5?'#15803d':'#b91c1c'}">${nota.toFixed(1)}</div><p>${nota>=9?'🏆 ¡Excelente!':nota>=7?'👏 ¡Muy bien!':nota>=5?'👍 Aprobado. Revisa los fallos.':'💪 Repasa los apuntes y vuelve a intentarlo.'}</p>
+    <table style="max-width:460px;margin:0 auto 14px">${per.map(p=>`<tr><td>${p.t}</td><td>${(Math.round(p.g*10)/10)} / ${p.m}</td></tr>`).join('')}</table>
+    <p>Tiempo: ${Math.floor(secs/60)} min · Salidas de la página: ${leaves} · Intento nº ${tries}</p>
+    <button id="pdfB">📄 Descargar PDF para mi Google Sites</button> <button class="ghost" onclick="location.reload()">🔄 Hacer otra versión</button>
+    <p style="font-size:14px;color:#5b6476">Baja por la página para ver la explicación de cada pregunta.</p>`;
+  $('pdfB').onclick=()=>pdf(data);$('result').scrollIntoView({behavior:'smooth'});
+}
+$('grade').onclick=grade;
+
+function hash(s){let h=5381;for(const ch of s)h=((h<<5)+h+ch.charCodeAt(0))>>>0;return h.toString(36).toUpperCase().slice(-6);}
+function pdf(d){
+  if(!window.jspdf){alert('No se ha podido cargar el generador de PDF. Usa Imprimir → Guardar como PDF.');window.print();return;}
+  const {jsPDF}=window.jspdf;const doc=new jsPDF();const W=210;let y;
+  const clean=s=>String(s).replace(/[^\x20-\x7E -ÿ]/g,'');
+  doc.setFillColor(37,99,235);doc.rect(0,0,W,32,'F');doc.setTextColor(255);doc.setFontSize(18);doc.text('Actividades autocorregidas · Redes',14,16);doc.setFontSize(11);doc.text('Digitalización 4º ESO · Unidad 2',14,25);
+  doc.setTextColor(30);doc.setFontSize(12);y=46;
+  [['Alumno/a',d.name],['Grupo',d.group],['Fecha',d.date.toLocaleString('es-ES')],['Tiempo',`${Math.floor(d.secs/60)} min ${d.secs%60} s`],['Salidas de la página',String(d.leaves)],['Intento',String(d.tries)]].forEach(r=>{doc.setFont(undefined,'bold');doc.text(r[0]+':',14,y);doc.setFont(undefined,'normal');doc.text(clean(r[1]),62,y);y+=7;});
+  doc.setFillColor(d.nota>=5?220:254,d.nota>=5?252:226,d.nota>=5?231:226);doc.roundedRect(140,40,56,40,4,4,'F');doc.setFontSize(12);doc.text('NOTA',168,52,{align:'center'});doc.setFontSize(28);doc.setFont(undefined,'bold');doc.text(d.nota.toFixed(1),168,70,{align:'center'});doc.setFont(undefined,'normal');
+  y+=6;doc.setFontSize(13);doc.setFont(undefined,'bold');doc.text('Resultado por apartados',14,y);y+=7;doc.setFontSize(11);doc.setFont(undefined,'normal');
+  d.per.forEach(p=>{doc.text(clean(p.t),18,y);doc.text(`${Math.round(p.g*10)/10} / ${p.m}`,120,y);y+=6.5;});
+  y+=5;doc.setFontSize(13);doc.setFont(undefined,'bold');doc.text(`Preguntas falladas (${d.fails.length}) y respuesta correcta`,14,y);y+=7;doc.setFontSize(9.5);doc.setFont(undefined,'normal');
+  if(!d.fails.length){doc.text('Ninguna. ¡Enhorabuena!',18,y);y+=6;}
+  d.fails.forEach(f=>{const lines=doc.splitTextToSize(`- [${clean(f.b)}] ${clean(f.c)}`,178);if(y+lines.length*5>275){doc.addPage();y=20;}doc.text(lines,18,y);y+=lines.length*5+1;});
+  y+=6;if(y>270){doc.addPage();y=20;}
+  doc.setFontSize(11);doc.setFillColor(227,236,255);doc.rect(14,y-6,182,12,'F');doc.text(`Puntos: ${Math.round(d.got*10)/10} / ${d.max}   ·   Código de verificación: ${hash(d.name+d.group+d.nota+d.secs+d.leaves)}`,18,y+2);
+  doc.setFontSize(9);doc.setTextColor(110);doc.text('Prof. Carlos Alberto Toledo · Este PDF se sube al portfolio de Google Sites',14,288);
+  doc.save(`Actividades_Redes_${d.name.replace(/\s+/g,'_')}.pdf`);
+}
+</script>
+</body>
+</html>
